@@ -13,12 +13,12 @@ object WebServerStub {
 
   def startStubServer(): Unit = {
     wireMockServer.start()
-    WireMock.configureFor("localhost", wireMockServer.port())
+    WireMock.configureFor(wireMockServer.port())
   }
 
   def stopStubServer(): Unit = wireMockServer.stop()
 
-  def mockGetRequest[T](url: String, body: T)(implicit requestWrites: Writes[T]): Unit = {
+  def mockSuccessGetRequest[T](url: String, body: T)(implicit requestWrites: Writes[T]): Unit = {
     val stringBody = Json.toJson(body).toString()
     stubFor(
       get(urlEqualTo(url))
@@ -27,4 +27,22 @@ object WebServerStub {
           .withBody(stringBody))
     )
   }
+
+  def mockSuccessNoContentGetRequest(url: String): Unit = {
+    stubFor(
+      get(urlEqualTo(url))
+        .willReturn(aResponse()
+          .withStatus(204))
+    )
+  }
+
+  def mockErrorGetRequest(url: String, body: String): Unit = {
+    stubFor(
+      get(urlEqualTo(url))
+        .willReturn(aResponse()
+          .withStatus(500)
+          .withBody(body))
+    )
+  }
+
 }
