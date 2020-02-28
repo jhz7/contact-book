@@ -1,8 +1,9 @@
 package co.com.addi.contact.book.infraestructure
 
 import com.github.tomakehurst.wiremock.WireMockServer
+import com.github.tomakehurst.wiremock.client.WireMock
 import com.github.tomakehurst.wiremock.client.WireMock._
-import play.api.libs.json.{ Json, Writes }
+import play.api.libs.json.{Json, Writes}
 
 object WebServerStub {
 
@@ -10,7 +11,10 @@ object WebServerStub {
 
   private val wireMockServer = new WireMockServer(port)
 
-  def startStubServer(): Unit = wireMockServer.start()
+  def startStubServer(): Unit = {
+    wireMockServer.start()
+    WireMock.configureFor("localhost", wireMockServer.port())
+  }
 
   def stopStubServer(): Unit = wireMockServer.stop()
 
@@ -19,6 +23,7 @@ object WebServerStub {
     stubFor(
       get(urlEqualTo(url))
         .willReturn(aResponse()
+          .withStatus(200)
           .withBody(stringBody))
     )
   }

@@ -1,5 +1,7 @@
 package co.com.addi.contact.book.application.dtos
 
+import play.api.libs.json.{Json, OFormat}
+
 final case class PersonDto(
   id:                String,
   typeId:            String,
@@ -7,3 +9,7 @@ final case class PersonDto(
   firstName:         String,
   lastName:          String
 )
+
+object PersonDto{
+  implicit val formatPersonDto: OFormat[PersonDto] = Json.format[PersonDto]
+}
