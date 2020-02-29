@@ -2,6 +2,8 @@ package co.com.addi.contact.book.application
 
 import akka.actor.ActorSystem
 import akka.stream.{Materializer, SystemMaterializer}
+import co.com.addi.contact.book.domain.contracts.ProspectBaseRepository
+import co.com.addi.contact.book.infraestructure.repositories.ProspectRepository
 import co.com.addi.contact.book.infraestructure.wsclients.{IdRepublicService, PoliceRepublicService}
 import play.api.libs.ws.ahc.StandaloneAhcWSClient
 
@@ -13,4 +15,5 @@ object Dependencies {
   val wsClient = StandaloneAhcWSClient()
   val idRepublicService: IdRepublicService = IdRepublicService
   val policeRepublicService: PoliceRepublicService = PoliceRepublicService
+  val prospectRepository: ProspectBaseRepository = ProspectRepository
 }
