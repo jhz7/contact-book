@@ -9,7 +9,7 @@ import co.com.addi.contact.book.domain.models.{Dni, Person}
 import co.com.addi.contact.book.infraestructure.databases.RepublicIdentificationDataBase
 import co.com.addi.contact.book.infraestructure.logger.Logging
 import co.com.addi.contact.book.infraestructure.transformers.PersonTransformer
-import co.com.addi.contact.book.infraestructure.webserver.{HttpStubbingManager, WebServerStub}
+import co.com.addi.contact.book.infraestructure.webserver.WebServerStub
 import monix.eval.Task
 import play.api.libs.ws.ahc.{StandaloneAhcWSClient, StandaloneAhcWSRequest}
 
@@ -23,7 +23,7 @@ trait RepublicIdentificationService {
 
 }
 
-object RepublicIdentificationService extends RepublicIdentificationService with HttpStubbingManager{
+object RepublicIdentificationService extends RepublicIdentificationService {
 
   override val webServerUrl: String = republicIdentificationWebServerUrl
 
@@ -34,16 +34,8 @@ object RepublicIdentificationService extends RepublicIdentificationService with 
 
       EitherT {
         Task.deferFuture(
-          wsClient.url(webServerUrl).get()
-            .map( webResponse => {
-              if(webResponse.status == 200)
-                JsonSerializationService.deserialize[PersonDto](webResponse.body)
-                  .map(persoData => Some(PersonTransformer.toPerson(persoData)))
-              else if(webResponse.status == 204)
-                Right(None)
-              else
-                Left(ErrorDto(APPLICATION, webResponse.body))
-            })
+          wsClient.url(s"http://localhost:9001/republic-id-service/person/${dni.number}/info").get()
+            .map( processWebResponse )
             .recover[CustomEither[Option[Person]]]{
               case error: Throwable =>
                 val message = s"Has occurred an error getting data for person with id ${dni.number}"
@@ -66,10 +58,8 @@ object RepublicIdentificationService extends RepublicIdentificationService with 
 
   private def stubWebServer(id: String): Unit =
     RepublicIdentificationDataBase.data.get(id) match {
-      case Some(personDto) => WebServerStub.mockSuccessGetRequest("/republic-id-service/person/info", personDto)
-      case None            => WebServerStub.mockSuccessNoContentGetRequest("/republic-id-service/person/info")
+      case Some(personDto) => WebServerStub.mockSuccessGetRequest(s"/republic-id-service/person/$id/info", personDto)
+      case None            => WebServerStub.mockSuccessNoContentGetRequest(s"/republic-id-service/person/$id/info")
     }
-
-  override val webServerErrorMessage: String = "The republic identification server has generated an error..."
 
 }

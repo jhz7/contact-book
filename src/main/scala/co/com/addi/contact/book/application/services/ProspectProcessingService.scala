@@ -2,6 +2,7 @@ package co.com.addi.contact.book.application.services
 
 import akka.Done
 import cats.data.{EitherT, Reader}
+import cats.implicits._
 import co.com.addi.contact.book.application.Dependencies
 import co.com.addi.contact.book.application.dtos.{APPLICATION, ErrorDto}
 import co.com.addi.contact.book.application.enhancements.CustomEitherEnhancement._
@@ -51,9 +52,10 @@ object ProspectProcessingService extends ProspectProcessingService {
 
       val validationExecution: Task[CustomEither[Done]] =
         for {
-          _ <- validationData
-          _ <- validationCriminalRecord
-        } yield Right(Done)
+          validationDataResult <- validationData
+          validationCriminalRecordResult <- validationCriminalRecord
+        } yield
+          (validationDataResult, validationCriminalRecordResult).mapN((_, _) => Done)
 
       EitherT(validationExecution)
   }

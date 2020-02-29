@@ -15,17 +15,21 @@ trait ProspectDataValidationService {
 
 object ProspectDataValidationService extends ProspectDataValidationService {
 
-  private val invalidIdMessage = "The id value is not valid"
-  private val invalidTypeIdMessage = "The id type value is not valid"
-  private val invalidFirstNameMessage = "The first name value is not valid"
-  private val invalidLastNameMessage = "The last name value is not valid"
+  private val invalidIdMessage: String => String =
+    id => s"The id value is not valid for prospect $id"
+  private val invalidTypeIdMessage: String => String =
+    id => s"The id type value is not valid for prospect $id"
+  private val invalidFirstNameMessage: String => String =
+    id => s"The first name value is not valid for prospect $id"
+  private val invalidLastNameMessage: String => String =
+    id => s"The last name value is not valid for prospect $id"
 
   def validateData(prospect: Person, dataFromIdentificationService: Person): CustomEither[Done] =
     (
-      validateItem(dataFromIdentificationService.dni.number, prospect.dni.number, invalidIdMessage),
-      validateItem(dataFromIdentificationService.dni.code, prospect.dni.code, invalidTypeIdMessage),
-      validateItem(dataFromIdentificationService.firstName, prospect.firstName, invalidFirstNameMessage),
-      validateItem(dataFromIdentificationService.lastName, prospect.lastName, invalidLastNameMessage)
+      validateItem(dataFromIdentificationService.dni.number, prospect.dni.number, invalidIdMessage(prospect.dni.number)),
+      validateItem(dataFromIdentificationService.dni.code, prospect.dni.code, invalidTypeIdMessage(prospect.dni.number)),
+      validateItem(dataFromIdentificationService.firstName, prospect.firstName, invalidFirstNameMessage(prospect.dni.number)),
+      validateItem(dataFromIdentificationService.lastName, prospect.lastName, invalidLastNameMessage(prospect.dni.number))
     ).mapN((_, _, _, _) => Done)
       .toCustomEither
 

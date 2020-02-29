@@ -8,7 +8,7 @@ import co.com.addi.contact.book.application.types.{CustomEither, CustomEitherT}
 import co.com.addi.contact.book.domain.models.Dni
 import co.com.addi.contact.book.infraestructure.databases.RepublicPoliceDatabase
 import co.com.addi.contact.book.infraestructure.logger.Logging
-import co.com.addi.contact.book.infraestructure.webserver.{HttpStubbingManager, WebServerStub}
+import co.com.addi.contact.book.infraestructure.webserver.WebServerStub
 import monix.eval.Task
 import play.api.libs.ws.ahc.{StandaloneAhcWSClient, StandaloneAhcWSRequest}
 
@@ -22,9 +22,7 @@ trait RepublicPoliceService {
 
 }
 
-object RepublicPoliceService extends RepublicPoliceService with HttpStubbingManager {
-
-  override val webServerErrorMessage: String = "The republic police server has generated an error..."
+object RepublicPoliceService extends RepublicPoliceService {
 
   override val webServerUrl: String = republicPoliceWebServerUrl
 
@@ -32,7 +30,7 @@ object RepublicPoliceService extends RepublicPoliceService with HttpStubbingMana
     wsClient: StandaloneAhcWSClient =>
 
       stubWebServer(dni.number)
-      val getRequest = wsClient.url(webServerUrl).get()
+      val getRequest = wsClient.url(s"http://localhost:9001/republic-police-service/person/${dni.number}/criminal-record").get()
 
       EitherT {
         Task.deferFuture(
@@ -58,7 +56,7 @@ object RepublicPoliceService extends RepublicPoliceService with HttpStubbingMana
 
   private def stubWebServer(id: String): Unit =
     RepublicPoliceDatabase.data.get(id) match {
-      case Some(criminalRecordDto) => WebServerStub.mockSuccessGetRequest("/republic-police-service/person/criminal-record", criminalRecordDto)
-      case None                    => WebServerStub.mockSuccessNoContentGetRequest("/republic-police-service/person/criminal-record")
+      case Some(criminalRecordDto) => WebServerStub.mockSuccessGetRequest(s"/republic-police-service/person/$id/criminal-record", criminalRecordDto)
+      case None                    => WebServerStub.mockSuccessNoContentGetRequest(s"/republic-police-service/person/$id/criminal-record")
     }
 }
