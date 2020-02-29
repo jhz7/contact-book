@@ -1,7 +1,6 @@
 package co.com.addi.contact.book.infraestructure.wsclients
 
 import cats.data.{EitherT, Reader}
-import co.com.addi.contact.book.application.constants._
 import co.com.addi.contact.book.application.dtos.{APPLICATION, ErrorDto, PersonDto, TECHNICAL}
 import co.com.addi.contact.book.application.services.JsonSerializationService
 import co.com.addi.contact.book.application.types.{CustomEither, CustomEitherT}
@@ -17,7 +16,8 @@ import scala.concurrent.ExecutionContext.Implicits._
 
 trait RepublicIdentificationService {
 
-  val webServerUrl: String
+  val webServerHost: String
+  val webResourcePath: String => String
 
   def getPerson(dni: Dni): Reader[StandaloneAhcWSClient, CustomEitherT[Option[Person]]]
 
@@ -25,7 +25,9 @@ trait RepublicIdentificationService {
 
 object RepublicIdentificationService extends RepublicIdentificationService {
 
-  override val webServerUrl: String = republicIdentificationWebServerUrl
+  override val webServerHost: String = "http://localhost:9001"
+
+  override val webResourcePath: String => String = id => s"/republic-id-service/person/$id/info"
 
   def getPerson(dni: Dni): Reader[StandaloneAhcWSClient, CustomEitherT[Option[Person]]] = Reader {
     wsClient: StandaloneAhcWSClient =>
@@ -34,7 +36,7 @@ object RepublicIdentificationService extends RepublicIdentificationService {
 
       EitherT {
         Task.deferFuture(
-          wsClient.url(s"http://localhost:9001/republic-id-service/person/${dni.number}/info").get()
+          wsClient.url(webServerHost + webResourcePath(dni.number)).get()
             .map( processWebResponse )
             .recover[CustomEither[Option[Person]]]{
               case error: Throwable =>
@@ -58,8 +60,8 @@ object RepublicIdentificationService extends RepublicIdentificationService {
 
   private def stubWebServer(id: String): Unit =
     RepublicIdentificationDataBase.data.get(id) match {
-      case Some(personDto) => WebServerStub.mockSuccessGetRequest(s"/republic-id-service/person/$id/info", personDto)
-      case None            => WebServerStub.mockSuccessNoContentGetRequest(s"/republic-id-service/person/$id/info")
+      case Some(personDto) => WebServerStub.mockSuccessGetRequest(webResourcePath(id), personDto)
+      case None            => WebServerStub.mockSuccessNoContentGetRequest(webResourcePath(id))
     }
 
 }

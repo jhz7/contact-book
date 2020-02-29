@@ -1,7 +1,6 @@
 package co.com.addi.contact.book.infraestructure.wsclients
 
 import cats.data.{EitherT, Reader}
-import co.com.addi.contact.book.application.constants._
 import co.com.addi.contact.book.application.dtos.{APPLICATION, CriminalRecordDto, ErrorDto, TECHNICAL}
 import co.com.addi.contact.book.application.services.JsonSerializationService
 import co.com.addi.contact.book.application.types.{CustomEither, CustomEitherT}
@@ -16,7 +15,8 @@ import scala.concurrent.ExecutionContext.Implicits._
 
 trait RepublicPoliceService {
 
-  val webServerUrl: String
+  val webServerHost: String
+  val webResourcePath: String => String
 
   def getCriminalRecord(dni: Dni): Reader[StandaloneAhcWSClient, CustomEitherT[Option[CriminalRecordDto]]]
 
@@ -24,13 +24,15 @@ trait RepublicPoliceService {
 
 object RepublicPoliceService extends RepublicPoliceService {
 
-  override val webServerUrl: String = republicPoliceWebServerUrl
+  override val webServerHost: String = "http://localhost:9001"
+
+  override val webResourcePath: String => String = id => s"/republic-police-service/person/$id/criminal-record"
 
   def getCriminalRecord( dni: Dni ): Reader[StandaloneAhcWSClient, CustomEitherT[Option[CriminalRecordDto]]] = Reader {
     wsClient: StandaloneAhcWSClient =>
 
       stubWebServer(dni.number)
-      val getRequest = wsClient.url(s"http://localhost:9001/republic-police-service/person/${dni.number}/criminal-record").get()
+      val getRequest = wsClient.url(webServerHost + webResourcePath(dni.number)).get()
 
       EitherT {
         Task.deferFuture(
@@ -56,7 +58,7 @@ object RepublicPoliceService extends RepublicPoliceService {
 
   private def stubWebServer(id: String): Unit =
     RepublicPoliceDatabase.data.get(id) match {
-      case Some(criminalRecordDto) => WebServerStub.mockSuccessGetRequest(s"/republic-police-service/person/$id/criminal-record", criminalRecordDto)
-      case None                    => WebServerStub.mockSuccessNoContentGetRequest(s"/republic-police-service/person/$id/criminal-record")
+      case Some(criminalRecordDto) => WebServerStub.mockSuccessGetRequest(webResourcePath(id), criminalRecordDto)
+      case None                    => WebServerStub.mockSuccessNoContentGetRequest(webResourcePath(id))
     }
 }
