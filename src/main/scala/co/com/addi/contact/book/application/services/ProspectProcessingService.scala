@@ -19,14 +19,12 @@ object ProspectProcessingService extends ProspectProcessingService {
 
   def process(dni: Dni): Reader[Dependencies, CustomEitherT[Done]] = Reader {
     dependencies: Dependencies =>
-      Logging.info("El logger funciona", getClass)
+      Logging.info(s"Processing prospect with id ${dni.number}...", getClass)
 
       val processing: CustomEitherT[Done] =
         for {
           prospect <- getProspect(dni).run(dependencies)
-//          _ <- validateProspectInfo(prospect).run(dependencies)
-          _ <- validateProspectData(prospect).run(dependencies)
-          _ <- validateProspectCriminalRecord(prospect).run(dependencies)
+          _ <- validateProspectInformationWithRepublicSystem(prospect).run(dependencies)
           _ <- validateProspectRating(prospect).run(dependencies)
           _ <- save(prospect).run(dependencies)
         } yield Done
@@ -45,23 +43,24 @@ object ProspectProcessingService extends ProspectProcessingService {
       }
   }
 
-//  private def validateProspectInfo(prospect: Person): Reader[Dependencies, CustomEitherT[Done]] = Reader {
-//    dependencies: Dependencies =>
-//
-//      val validationData = validateProspectData(prospect).run(dependencies).value
-//      val validationCriminalRecord = validateProspectCriminalRecord(prospect).run(dependencies).value
-//
-//      val validationExecution: Task[CustomEither[Done]] =
-//        for {
-//          _ <- validationData
-//          _ <- validationCriminalRecord
-//        } yield Right(Done)
-//
-//      EitherT(validationExecution)
-//  }
+  private def validateProspectInformationWithRepublicSystem(prospect: Person): Reader[Dependencies, CustomEitherT[Done]] = Reader {
+    dependencies: Dependencies =>
+
+      val validationData = validateProspectData(prospect).run(dependencies).value
+      val validationCriminalRecord = validateProspectCriminalRecord(prospect).run(dependencies).value
+
+      val validationExecution: Task[CustomEither[Done]] =
+        for {
+          _ <- validationData
+          _ <- validationCriminalRecord
+        } yield Right(Done)
+
+      EitherT(validationExecution)
+  }
 
   private def validateProspectData(prospect: Person): Reader[Dependencies, CustomEitherT[Done]] = Reader {
     dependencies: Dependencies =>
+      Logging.info(s"Validating personal data for prospect ${prospect.dni.number}...", getClass)
 
       dependencies.republicIdentificationService
         .getPerson(prospect.dni).run(dependencies.wsClient)
@@ -73,6 +72,7 @@ object ProspectProcessingService extends ProspectProcessingService {
 
   private def validateProspectCriminalRecord(prospect: Person): Reader[Dependencies, CustomEitherT[Done]] = Reader {
     dependencies: Dependencies =>
+      Logging.info(s"Validating criminal record for prospect ${prospect.dni.number}...", getClass)
 
       dependencies.republicPoliceService
         .getCriminalRecord(prospect.dni).run(dependencies.wsClient)
@@ -83,6 +83,7 @@ object ProspectProcessingService extends ProspectProcessingService {
 
   private def validateProspectRating(prospect: Person): Reader[Dependencies, CustomEitherT[Done]] = Reader {
     dependencies: Dependencies =>
+      Logging.info(s"Validating rating for prospect ${prospect.dni.number}...", getClass)
 
       val score = dependencies.prospectRatingService.rate(prospect.dni)
 
@@ -93,12 +94,10 @@ object ProspectProcessingService extends ProspectProcessingService {
   private def save(prospect: Person): Reader[Dependencies, CustomEitherT[Done]] = Reader {
     dependencies: Dependencies =>
 
-      dependencies.contactRepository
-        .save(prospect).map(
-        _ => {
-          Logging.info(s"Contact ${prospect.dni.number} saved successfully!!", getClass)
-          Done
-        })
+      dependencies.contactRepository.save(prospect).map( _ => {
+        Logging.info(s"Contact ${prospect.dni.number} saved successfully!!", getClass)
+        Done
+      })
   }
 
 }

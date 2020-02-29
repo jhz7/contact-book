@@ -17,6 +17,6 @@ object ProspectCriminalRecordValidationService extends ProspectCriminalRecordVal
     if(criminalRecordDto.isEmpty || criminalRecordDto.exists(_.descriptions.isEmpty))
       Right(Done)
     else
-      Left(ErrorDto(BUSINESS, s"The criminal record for the prospect ${dni.number} is invalid"))
+      Left(ErrorDto(BUSINESS, s"The criminal record for the prospect ${dni.number} is not valid"))
 
 }

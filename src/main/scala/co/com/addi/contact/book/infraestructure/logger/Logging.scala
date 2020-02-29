@@ -1,19 +1,15 @@
 package co.com.addi.contact.book.infraestructure.logger
 
+import org.slf4j.{Logger, LoggerFactory}
 
 object Logging {
 
-  def info[T](message: String, `class`: Class[T]): Unit = {
-//    getLoggerX(`class`).info(message)
-    println("INFO: " + message + " " + `class`.getName )
-  }
+  def info[T](message: String, `class`: Class[T]): Unit =
+    getLogger(`class`).info(Console.YELLOW + message + Console.RESET)
 
-  def error[T](message: String, error: Option[Throwable], `class`: Class[T]): Unit = {
-//    getLoggerX(`class`).error(message, error)
-    println("ERROR: " + message + " " + `class`.getName )
-  }
+  def error[T](message: String, throwable: Option[Throwable], `class`: Class[T]): Unit =
+    getLogger(`class`).error(Console.RED + message + Console.RESET, throwable)
 
-  private def getLoggerX[T](`class`: Class[T]) = {
-//    LoggerFactory.getLogger(`class`)
-  }
+  private def getLogger[T](`class`: Class[T]): Logger =
+    LoggerFactory.getLogger(`class`)
 }

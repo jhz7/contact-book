@@ -5,7 +5,7 @@ import co.com.addi.contact.book.application.dtos.PersonDto
 object ProspectsDataBase {
 
   val data: Map[String, PersonDto] = Map(
-    "1" -> PersonDto(id = "1", typeId = "PA", expeditionIdPlace = "Medell\u00EDn Antioquia", firstName = "Jhon", lastName = "Zambrano"),
+    "1" -> PersonDto(id = "1", typeId = "CC", expeditionIdPlace = "Medell\u00EDn Antioquia", firstName = "Jhon", lastName = "Zambrano"),
     "2" -> PersonDto(id = "2", typeId = "PA", expeditionIdPlace = "Bogot\u00E1", firstName = "Pedro", lastName = "Ortiz"),
     "3" -> PersonDto(id = "3", typeId = "CC", expeditionIdPlace = "Venezuela", firstName = "Maria", lastName = "Maldonado"),
     "4" -> PersonDto(id = "4", typeId = "PA", expeditionIdPlace = "Medell\u00EDn Antioquia", firstName = "Ana", lastName = "Gutierrez"),

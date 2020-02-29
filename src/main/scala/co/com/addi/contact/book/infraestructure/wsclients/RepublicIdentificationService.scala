@@ -9,7 +9,7 @@ import co.com.addi.contact.book.domain.models.{Dni, Person}
 import co.com.addi.contact.book.infraestructure.databases.RepublicIdentificationDataBase
 import co.com.addi.contact.book.infraestructure.logger.Logging
 import co.com.addi.contact.book.infraestructure.transformers.PersonTransformer
-import co.com.addi.contact.book.infraestructure.webserver.HttpStubbingManager
+import co.com.addi.contact.book.infraestructure.webserver.{HttpStubbingManager, WebServerStub}
 import monix.eval.Task
 import play.api.libs.ws.ahc.{StandaloneAhcWSClient, StandaloneAhcWSRequest}
 
@@ -65,8 +65,10 @@ object RepublicIdentificationService extends RepublicIdentificationService with 
   }
 
   private def stubWebServer(id: String): Unit =
-    RepublicIdentificationDataBase.data.get(id)
-      .foreach(personDto => stubbingRandomlyWebServer("/republic-id-service/person/info", personDto))
+    RepublicIdentificationDataBase.data.get(id) match {
+      case Some(personDto) => WebServerStub.mockSuccessGetRequest("/republic-id-service/person/info", personDto)
+      case None            => WebServerStub.mockSuccessNoContentGetRequest("/republic-id-service/person/info")
+    }
 
   override val webServerErrorMessage: String = "The republic identification server has generated an error..."
 

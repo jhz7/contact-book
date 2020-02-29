@@ -44,7 +44,7 @@ object Main extends App {
 
   WebServerStub.startStubServer()
 
-  val dni = Dni(number = "1", code = IdentityCard)
+  val dni = Dni(number = "2", code = IdentityCard)
 
   implicit val system: ActorSystem = ActorSystem()
 

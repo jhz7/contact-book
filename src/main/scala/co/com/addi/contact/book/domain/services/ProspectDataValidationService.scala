@@ -16,14 +16,14 @@ trait ProspectDataValidationService {
 object ProspectDataValidationService extends ProspectDataValidationService {
 
   private val invalidIdMessage = "The id value is not valid"
-  private val invalidTypeIdMessage = "The type id value is not valid"
+  private val invalidTypeIdMessage = "The id type value is not valid"
   private val invalidFirstNameMessage = "The first name value is not valid"
   private val invalidLastNameMessage = "The last name value is not valid"
 
   def validateData(prospect: Person, dataFromIdentificationService: Person): CustomEither[Done] =
     (
       validateItem(dataFromIdentificationService.dni.number, prospect.dni.number, invalidIdMessage),
-      validateItem(dataFromIdentificationService.dni.code, prospect.dni.number, invalidTypeIdMessage),
+      validateItem(dataFromIdentificationService.dni.code, prospect.dni.code, invalidTypeIdMessage),
       validateItem(dataFromIdentificationService.firstName, prospect.firstName, invalidFirstNameMessage),
       validateItem(dataFromIdentificationService.lastName, prospect.lastName, invalidLastNameMessage)
     ).mapN((_, _, _, _) => Done)

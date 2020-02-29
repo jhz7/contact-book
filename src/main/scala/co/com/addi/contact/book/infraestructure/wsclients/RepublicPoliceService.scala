@@ -8,7 +8,7 @@ import co.com.addi.contact.book.application.types.{CustomEither, CustomEitherT}
 import co.com.addi.contact.book.domain.models.Dni
 import co.com.addi.contact.book.infraestructure.databases.RepublicPoliceDatabase
 import co.com.addi.contact.book.infraestructure.logger.Logging
-import co.com.addi.contact.book.infraestructure.webserver.HttpStubbingManager
+import co.com.addi.contact.book.infraestructure.webserver.{HttpStubbingManager, WebServerStub}
 import monix.eval.Task
 import play.api.libs.ws.ahc.{StandaloneAhcWSClient, StandaloneAhcWSRequest}
 
@@ -57,6 +57,8 @@ object RepublicPoliceService extends RepublicPoliceService with HttpStubbingMana
   }
 
   private def stubWebServer(id: String): Unit =
-    RepublicPoliceDatabase.data.get(id)
-      .foreach(criminalRecordDto => stubbingRandomlyWebServer("/republic-police-service/person/criminal-record", criminalRecordDto))
+    RepublicPoliceDatabase.data.get(id) match {
+      case Some(criminalRecordDto) => WebServerStub.mockSuccessGetRequest("/republic-police-service/person/criminal-record", criminalRecordDto)
+      case None                    => WebServerStub.mockSuccessNoContentGetRequest("/republic-police-service/person/criminal-record")
+    }
 }
