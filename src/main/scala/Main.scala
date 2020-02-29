@@ -9,17 +9,16 @@ import co.com.addi.contact.book.infraestructure.databases.ProspectsDataBase
 import co.com.addi.contact.book.infraestructure.webserver.WebServerStub
 import monix.eval.Task
 import monix.execution.ExecutionModel.AlwaysAsyncExecution
-import monix.execution.UncaughtExceptionReporter
-import monix.execution.schedulers.ExecutorScheduler
-import monix.execution.Scheduler.Implicits.global
+import monix.execution.schedulers.SchedulerService
+import monix.execution.{Scheduler, UncaughtExceptionReporter}
 
 object Main extends App {
 
-//  implicit val commandSchedulerTest: ExecutorScheduler = ExecutorScheduler(
-//    Executors.newFixedThreadPool( 10 ),
-//    UncaughtExceptionReporter( t => println( s"this should not happen: ${t.getMessage}" ) ),
-//    AlwaysAsyncExecution
-//  )
+  implicit val schedulerService: SchedulerService = Scheduler(
+    Executors.newFixedThreadPool( 10 ),
+    UncaughtExceptionReporter( t => println( s"this should not happen: ${t.getMessage}" ) ),
+    AlwaysAsyncExecution
+  )
 
   WebServerStub.startStubServer()
   implicit val system: ActorSystem = ActorSystem()
@@ -34,6 +33,7 @@ object Main extends App {
     .andThen( _ => {
         WebServerStub.stopStubServer()
         system.terminate()
+        schedulerService.shutdown()
       })
 
 }
