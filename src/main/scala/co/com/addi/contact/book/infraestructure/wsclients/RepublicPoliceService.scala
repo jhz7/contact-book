@@ -7,7 +7,7 @@ import co.com.addi.contact.book.application.services.JsonSerializationService
 import co.com.addi.contact.book.application.types.{CustomEither, CustomEitherT}
 import co.com.addi.contact.book.domain.models.Dni
 import co.com.addi.contact.book.infraestructure.databases.RepublicPoliceDatabase
-import co.com.addi.contact.book.infraestructure.logger.Logger
+import co.com.addi.contact.book.infraestructure.logger.Logging
 import co.com.addi.contact.book.infraestructure.webserver.HttpStubbingManager
 import monix.eval.Task
 import play.api.libs.ws.ahc.{StandaloneAhcWSClient, StandaloneAhcWSRequest}
@@ -40,7 +40,7 @@ object RepublicPoliceService extends RepublicPoliceService with HttpStubbingMana
             .recover[CustomEither[Option[CriminalRecordDto]]]{
               case error: Throwable =>
                 val message = s"Has occurred an error getting criminal record for person with id ${dni.number}"
-                Logger.error(message, Some(error), getClass)
+                Logging.error(message, Some(error), getClass)
                 Left(ErrorDto(TECHNICAL, message))
             }
         )
@@ -58,5 +58,5 @@ object RepublicPoliceService extends RepublicPoliceService with HttpStubbingMana
 
   private def stubWebServer(id: String): Unit =
     RepublicPoliceDatabase.data.get(id)
-      .foreach(criminalRecordDto => stubbingRandomlyWebServer(webServerUrl, criminalRecordDto))
+      .foreach(criminalRecordDto => stubbingRandomlyWebServer("/republic-police-service/person/criminal-record", criminalRecordDto))
 }

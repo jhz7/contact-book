@@ -1,6 +1,6 @@
 package co.com.addi.contact.book.infraestructure.webserver
 
-import co.com.addi.contact.book.infraestructure.logger.Logger
+import co.com.addi.contact.book.infraestructure.logger.Logging
 import play.api.libs.json.Writes
 
 import scala.util.Random
@@ -28,7 +28,7 @@ trait HttpStubbingManager {
       case Some(SUCCESS)            => WebServerStub.mockSuccessGetRequest(url, successResponse)
       case Some(SUCCESS_NO_CONTENT) => WebServerStub.mockSuccessNoContentGetRequest(url)
       case _ =>
-        Logger.error("This must not happen...", None, getClass)
+        Logging.error("This must not happen...", None, getClass)
     }
   }
 }
