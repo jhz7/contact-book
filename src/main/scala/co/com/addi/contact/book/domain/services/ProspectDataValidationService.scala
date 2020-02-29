@@ -7,13 +7,13 @@ import co.com.addi.contact.book.application.enhancements.CustomValidatedEnhancem
 import co.com.addi.contact.book.application.types.{CustomEither, CustomValidated}
 import co.com.addi.contact.book.domain.models.Person
 
-trait ContactDataValidationService {
+trait ProspectDataValidationService {
 
   def validateData(prospect: Person, dataFromIdentificationService: Person): CustomEither[Done]
 
 }
 
-object ContactDataValidationService extends ContactDataValidationService {
+object ProspectDataValidationService extends ProspectDataValidationService {
 
   private val invalidIdMessage = "The id value is not valid"
   private val invalidTypeIdMessage = "The type id value is not valid"

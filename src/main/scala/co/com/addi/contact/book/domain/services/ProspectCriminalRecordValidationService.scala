@@ -5,18 +5,18 @@ import co.com.addi.contact.book.application.dtos.{BUSINESS, CriminalRecordDto, E
 import co.com.addi.contact.book.application.types.CustomEither
 import co.com.addi.contact.book.domain.models.Dni
 
-trait CriminalRecordValidationService {
+trait ProspectCriminalRecordValidationService {
 
   def validateRecord(dni: Dni, criminalRecordDto: Option[CriminalRecordDto]): CustomEither[Done]
 
 }
 
-object CriminalRecordValidationService extends CriminalRecordValidationService {
+object ProspectCriminalRecordValidationService extends ProspectCriminalRecordValidationService {
 
   def validateRecord(dni: Dni, criminalRecordDto: Option[CriminalRecordDto]): CustomEither[Done] =
     if(criminalRecordDto.isEmpty || criminalRecordDto.exists(_.descriptions.isEmpty))
       Right(Done)
     else
-      Left(ErrorDto(BUSINESS, s"The criminal record for contact ${dni.number} is invalid"))
+      Left(ErrorDto(BUSINESS, s"The criminal record for the prospect ${dni.number} is invalid"))
 
 }
