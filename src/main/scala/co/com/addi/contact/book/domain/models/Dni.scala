@@ -1,6 +1,8 @@
 package co.com.addi.contact.book.domain.models
 
-trait DniCode {
+trait DniCode
+
+object DniCode {
   def apply(value: String): DniCode =
     value match {
       case "PA" => Passport
