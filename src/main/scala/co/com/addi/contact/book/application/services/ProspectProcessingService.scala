@@ -13,11 +13,6 @@ import monix.eval.Task
 
 trait ProspectProcessingService {
 
-  def process(dni: Dni): Reader[Dependencies, CustomEitherT[Done]]
-}
-
-object ProspectProcessingService extends ProspectProcessingService {
-
   def process(dni: Dni): Reader[Dependencies, CustomEitherT[Done]] = Reader {
     dependencies: Dependencies =>
       Logging.info(s"Processing prospect with id ${dni.number}...", getClass)
@@ -103,3 +98,5 @@ object ProspectProcessingService extends ProspectProcessingService {
   }
 
 }
+
+object ProspectProcessingService extends ProspectProcessingService
