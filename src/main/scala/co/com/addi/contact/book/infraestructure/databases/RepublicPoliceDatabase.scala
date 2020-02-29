@@ -1,8 +1,8 @@
-package co.com.addi.contact.book.infraestructure
+package co.com.addi.contact.book.infraestructure.databases
 
 import co.com.addi.contact.book.application.dtos.CriminalRecordDto
 
-object PoliceRepublicDatabase {
+object RepublicPoliceDatabase {
 
   val data: Map[String, CriminalRecordDto] = Map(
     "1" -> CriminalRecordDto(firstName = "Jhon", lastName = "Zambrano", id = "1", typeId = "PA", descriptions = Nil),

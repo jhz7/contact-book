@@ -1,4 +1,4 @@
-package co.com.addi.contact.book.infraestructure
+package co.com.addi.contact.book.infraestructure.databases
 
 import co.com.addi.contact.book.application.dtos.PersonDto
 

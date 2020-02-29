@@ -1,8 +1,8 @@
-package co.com.addi.contact.book.infraestructure
+package co.com.addi.contact.book.infraestructure.webserver
 
 import com.github.tomakehurst.wiremock.WireMockServer
 import com.github.tomakehurst.wiremock.client.WireMock
-import com.github.tomakehurst.wiremock.client.WireMock._
+import com.github.tomakehurst.wiremock.client.WireMock.{aResponse, get, stubFor, urlEqualTo}
 import play.api.libs.json.{Json, Writes}
 
 object WebServerStub {

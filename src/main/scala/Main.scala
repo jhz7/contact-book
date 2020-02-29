@@ -1,7 +1,7 @@
 import akka.actor.ActorSystem
 import akka.stream.{Materializer, SystemMaterializer}
 import co.com.addi.contact.book.application.dtos.PersonDto
-import co.com.addi.contact.book.infraestructure.WebServerStub
+import co.com.addi.contact.book.infraestructure.webserver.WebServerStub
 import play.api.libs.ws.ahc._
 
 import scala.concurrent.ExecutionContext.Implicits._

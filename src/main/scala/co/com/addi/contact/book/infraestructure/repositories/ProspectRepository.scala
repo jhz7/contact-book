@@ -5,7 +5,7 @@ import co.com.addi.contact.book.application.dtos.ErrorDto
 import co.com.addi.contact.book.application.types.CustomEitherT
 import co.com.addi.contact.book.domain.contracts.ProspectBaseRepository
 import co.com.addi.contact.book.domain.models.{Dni, Person}
-import co.com.addi.contact.book.infraestructure.ProspectsDataBase
+import co.com.addi.contact.book.infraestructure.databases.ProspectsDataBase
 import co.com.addi.contact.book.infraestructure.transformers.PersonTransformer
 import monix.eval.Task
 

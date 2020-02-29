@@ -1,4 +1,4 @@
-package co.com.addi.contact.book.infraestructure
+package co.com.addi.contact.book.infraestructure.webserver
 
 import co.com.addi.contact.book.infraestructure.logger.Logger
 import play.api.libs.json.Writes
