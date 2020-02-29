@@ -4,7 +4,7 @@ import co.com.addi.contact.book.application.dtos.{APPLICATION, ErrorDto}
 import co.com.addi.contact.book.application.types.CustomEither
 import play.api.libs.json.{Json, Reads}
 
-trait JsonService {
+trait JsonSerializationService {
 
   private val errorMessage = "The json value do not have an expected format..."
 
@@ -17,4 +17,4 @@ trait JsonService {
 
 }
 
-object JsonService extends JsonService
+object JsonSerializationService extends JsonSerializationService

@@ -7,7 +7,7 @@ import scala.util.Random
 
 trait HttpStubbingManager {
 
-  def getErrorMessage: String
+  val webServerErrorMessage: String
 
   sealed trait KindHttpResponses
   object SUCCESS extends KindHttpResponses
@@ -23,8 +23,8 @@ trait HttpStubbingManager {
   def stubbingRandomlyWebServer[T](url: String, successResponse: T)(implicit writes: Writes[T]): Unit = {
     val processNumber = Random.nextInt(3)
 
-    process.get(processNumber) match{
-      case Some(ERROR)              => WebServerStub.mockErrorGetRequest(url, getErrorMessage)
+    process.get(processNumber) match {
+      case Some(ERROR)              => WebServerStub.mockErrorGetRequest(url, webServerErrorMessage)
       case Some(SUCCESS)            => WebServerStub.mockSuccessGetRequest(url, successResponse)
       case Some(SUCCESS_NO_CONTENT) => WebServerStub.mockSuccessNoContentGetRequest(url)
       case _ =>
