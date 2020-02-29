@@ -6,5 +6,4 @@ package object constants {
 
   val republicPoliceWebServerUrl: String = "/id-republic-service/person/info"
 
-
 }
