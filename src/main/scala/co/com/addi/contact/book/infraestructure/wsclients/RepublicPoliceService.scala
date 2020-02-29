@@ -14,7 +14,7 @@ import play.api.libs.ws.ahc.{StandaloneAhcWSClient, StandaloneAhcWSRequest}
 
 import scala.concurrent.ExecutionContext.Implicits._
 
-trait RepublicPoliceService extends HttpStubbingManager{
+trait RepublicPoliceService {
 
   val webServerUrl: String
 
@@ -22,7 +22,7 @@ trait RepublicPoliceService extends HttpStubbingManager{
 
 }
 
-object RepublicPoliceService extends RepublicPoliceService {
+object RepublicPoliceService extends RepublicPoliceService with HttpStubbingManager {
 
   override val webServerErrorMessage: String = "The republic police server has generated an error..."
 

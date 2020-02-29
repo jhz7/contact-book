@@ -14,7 +14,7 @@ import play.api.libs.ws.ahc.{StandaloneAhcWSClient, StandaloneAhcWSRequest}
 
 import scala.concurrent.ExecutionContext.Implicits._
 
-trait RepublicIdentificationService extends HttpStubbingManager {
+trait RepublicIdentificationService {
 
   val webServerUrl: String
 
@@ -22,7 +22,7 @@ trait RepublicIdentificationService extends HttpStubbingManager {
 
 }
 
-object RepublicIdentificationService extends RepublicIdentificationService {
+object RepublicIdentificationService extends RepublicIdentificationService with HttpStubbingManager{
 
   override val webServerUrl: String = republicIdentificationWebServerUrl
 

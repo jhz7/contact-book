@@ -6,12 +6,10 @@ import play.api.libs.json.{Json, Reads}
 
 trait JsonSerializationService {
 
-  private val errorMessage = "The json value do not have an expected format..."
-
   def deserialize[T](value: String)(implicit reads: Reads[T]): CustomEither[T] = {
     Json.parse(value).validate[T].asEither match {
       case Right(pojo) => Right(pojo)
-      case Left(_)     => Left(ErrorDto(APPLICATION, errorMessage))
+      case Left(_)     => Left(ErrorDto(APPLICATION, "The json value do not have an expected format..."))
     }
   }
 
