@@ -59,6 +59,27 @@ class RepublicIdentificationServiceTest extends TestKit {
         }
       }
 
+      "The retrieved data does not have a valid format" must {
+        "Return an error related to bad json format" in {
+
+          val dni = PersonFactory.createDni
+          val badJsonObj = "{}"
+          val wsClient = mock[StandaloneAhcWSClient]
+          val request = mock[StandaloneAhcWSRequest]
+          val response = mock[StandaloneAhcWSResponse]
+          val futureResponse = Future.successful(response)
+
+          doReturn(request).when(wsClient).url(anyString)
+          doReturn(futureResponse).when(request).get()
+          doReturn(200).when(response).status
+          doReturn(badJsonObj).when(response).body
+
+          val result = FutureTool.awaitResult(RepublicIdentificationService.getPerson(dni).run(wsClient).value.runToFuture)
+
+          result mustBe Left(ErrorDto(APPLICATION, "The json value do not have an expected format..."))
+        }
+      }
+
       "The server returns an error" must {
         "Return the generated error" in {
 

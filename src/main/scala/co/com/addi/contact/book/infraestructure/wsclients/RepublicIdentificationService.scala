@@ -1,8 +1,7 @@
 package co.com.addi.contact.book.infraestructure.wsclients
 
 import cats.data.{EitherT, Reader}
-import co.com.addi.contact.book.application.dtos.{APPLICATION, ErrorDto, PersonDto, TECHNICAL}
-import co.com.addi.contact.book.application.services.JsonSerializationService
+import co.com.addi.contact.book.application.dtos.{ErrorDto, PersonDto, TECHNICAL}
 import co.com.addi.contact.book.application.types.{CustomEither, CustomEitherT}
 import co.com.addi.contact.book.domain.models.{Dni, Person}
 import co.com.addi.contact.book.infraestructure.databases.RepublicIdentificationDataBase
@@ -10,7 +9,7 @@ import co.com.addi.contact.book.infraestructure.logger.Logging
 import co.com.addi.contact.book.infraestructure.transformers.PersonTransformer
 import co.com.addi.contact.book.infraestructure.webserver.WebServerStub
 import monix.eval.Task
-import play.api.libs.ws.ahc.{StandaloneAhcWSClient, StandaloneAhcWSRequest}
+import play.api.libs.ws.ahc.StandaloneAhcWSClient
 
 import scala.concurrent.ExecutionContext.Implicits._
 
@@ -23,7 +22,7 @@ trait RepublicIdentificationService {
 
 }
 
-object RepublicIdentificationService extends RepublicIdentificationService {
+object RepublicIdentificationService extends RepublicIdentificationService with WebClientHelper{
 
   override val webServerHost: String = "http://localhost:9001"
 
@@ -37,7 +36,10 @@ object RepublicIdentificationService extends RepublicIdentificationService {
       EitherT {
         Task.deferFuture(
           wsClient.url(webServerHost + webResourcePath(dni.number)).get()
-            .map( processWebResponse )
+            .map( webResponse =>
+              processWebResponse[PersonDto](webResponse)
+                .map(_.map( PersonTransformer.toPerson ))
+            )
             .recover[CustomEither[Option[Person]]]{
               case error: Throwable =>
                 val message = s"Has occurred an error getting data for person with id ${dni.number}"
@@ -46,16 +48,6 @@ object RepublicIdentificationService extends RepublicIdentificationService {
             }
         )
       }
-  }
-
-  private def processWebResponse(webResponse: StandaloneAhcWSRequest#Response): CustomEither[Option[Person]] ={
-    if(webResponse.status == 200)
-      JsonSerializationService.deserialize[PersonDto](webResponse.body)
-        .map(persoData => Some(PersonTransformer.toPerson(persoData)))
-    else if(webResponse.status == 204)
-      Right(None)
-    else
-      Left(ErrorDto(APPLICATION, webResponse.body))
   }
 
   private def stubWebServer(id: String): Unit =

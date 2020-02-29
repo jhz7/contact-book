@@ -1,15 +1,14 @@
 package co.com.addi.contact.book.infraestructure.wsclients
 
 import cats.data.{EitherT, Reader}
-import co.com.addi.contact.book.application.dtos.{APPLICATION, CriminalRecordDto, ErrorDto, TECHNICAL}
-import co.com.addi.contact.book.application.services.JsonSerializationService
+import co.com.addi.contact.book.application.dtos.{CriminalRecordDto, ErrorDto, TECHNICAL}
 import co.com.addi.contact.book.application.types.{CustomEither, CustomEitherT}
 import co.com.addi.contact.book.domain.models.Dni
 import co.com.addi.contact.book.infraestructure.databases.RepublicPoliceDatabase
 import co.com.addi.contact.book.infraestructure.logger.Logging
 import co.com.addi.contact.book.infraestructure.webserver.WebServerStub
 import monix.eval.Task
-import play.api.libs.ws.ahc.{StandaloneAhcWSClient, StandaloneAhcWSRequest}
+import play.api.libs.ws.ahc.StandaloneAhcWSClient
 
 import scala.concurrent.ExecutionContext.Implicits._
 
@@ -22,7 +21,7 @@ trait RepublicPoliceService {
 
 }
 
-object RepublicPoliceService extends RepublicPoliceService {
+object RepublicPoliceService extends RepublicPoliceService with WebClientHelper{
 
   override val webServerHost: String = "http://localhost:9001"
 
@@ -32,11 +31,11 @@ object RepublicPoliceService extends RepublicPoliceService {
     wsClient: StandaloneAhcWSClient =>
 
       stubWebServer(dni.number)
-      val getRequest = wsClient.url(webServerHost + webResourcePath(dni.number)).get()
 
       EitherT {
         Task.deferFuture(
-          getRequest.map( processWebResponse )
+          wsClient.url(webServerHost + webResourcePath(dni.number)).get()
+            .map( webResponse => processWebResponse[CriminalRecordDto](webResponse) )
             .recover[CustomEither[Option[CriminalRecordDto]]]{
               case error: Throwable =>
                 val message = s"Has occurred an error getting criminal record for person with id ${dni.number}"
@@ -45,15 +44,6 @@ object RepublicPoliceService extends RepublicPoliceService {
             }
         )
       }
-  }
-
-  private def processWebResponse(webResponse: StandaloneAhcWSRequest#Response): CustomEither[Option[CriminalRecordDto]] ={
-    if(webResponse.status == 200)
-      JsonSerializationService.deserialize[CriminalRecordDto](webResponse.body).map(Some(_))
-    else if(webResponse.status == 204)
-      Right(None)
-    else
-      Left(ErrorDto(APPLICATION, webResponse.body))
   }
 
   private def stubWebServer(id: String): Unit =
