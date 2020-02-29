@@ -28,6 +28,8 @@ libraryDependencies += "com.github.tomakehurst" % "wiremock" % "1.58"
 libraryDependencies += "com.typesafe.play" %% "play-json" % "2.8.1"
 libraryDependencies += "com.typesafe.play" %% "play-ahc-ws-standalone" % "2.1.2"
 libraryDependencies += "io.monix" %% "monix" % "3.1.0"
+libraryDependencies += "com.softwaremill.quicklens" %% "quicklens" % "1.4.12"
+libraryDependencies += "org.mockito" % "mockito-core" % "3.3.0" % Test
 libraryDependencies ++= Seq("org.slf4j" % "slf4j-api" % "1.7.5",
   "org.slf4j" % "slf4j-simple" % "1.7.5")
 

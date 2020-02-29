@@ -3,16 +3,14 @@ import java.util.concurrent.Executors
 import akka.Done
 import akka.actor.ActorSystem
 import co.com.addi.contact.book.application.Dependencies
-import co.com.addi.contact.book.application.dtos.ErrorDto
 import co.com.addi.contact.book.application.types.CustomEither
-import co.com.addi.contact.book.domain.models.{Dni, DniCode, IdentityCard}
+import co.com.addi.contact.book.domain.models.{Dni, DniCode}
 import co.com.addi.contact.book.infraestructure.databases.ProspectsDataBase
 import co.com.addi.contact.book.infraestructure.webserver.WebServerStub
 import monix.eval.Task
 import monix.execution.ExecutionModel.AlwaysAsyncExecution
 import monix.execution.UncaughtExceptionReporter
 import monix.execution.schedulers.ExecutorScheduler
-
 
 object Main extends App {
 
@@ -32,7 +30,7 @@ object Main extends App {
   })
 
   Task.sequence(tasks).runToFuture
-    .andThen(_ => {
+    .andThen( _ => {
         WebServerStub.stopStubServer()
         system.terminate()
       })
