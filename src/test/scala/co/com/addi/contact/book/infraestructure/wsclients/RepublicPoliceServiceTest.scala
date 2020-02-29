@@ -1,9 +1,8 @@
 package co.com.addi.contact.book.infraestructure.wsclients
 
 import co.com.addi.contact.book.TestKit
-import co.com.addi.contact.book.application.dtos.{APPLICATION, ErrorDto, TECHNICAL}
-import co.com.addi.contact.book.domain.models.Person
-import co.com.addi.contact.book.factories.PersonFactory
+import co.com.addi.contact.book.application.dtos.{APPLICATION, CriminalRecordDto, ErrorDto, TECHNICAL}
+import co.com.addi.contact.book.factories.{CriminalRecordFactory, PersonFactory}
 import co.com.addi.contact.book.infraestructure.webserver.WebServerStub
 import co.com.addi.contact.book.tools.FutureTool
 import play.api.libs.json.Json
@@ -11,19 +10,19 @@ import play.api.libs.ws.ahc.{StandaloneAhcWSClient, StandaloneAhcWSRequest, Stan
 
 import scala.concurrent.Future
 
-class RepublicIdentificationServiceTest extends TestKit {
+class RepublicPoliceServiceTest extends TestKit {
 
   before( WebServerStub.startStubServer() )
 
-  "RepublicIdentificationService" should {
+  "RepublicPoliceService" should {
 
-    "Get person" when {
+    "Get the criminal record" when {
 
-      "The person exists" must {
-        "Return Person instance" in {
+      "The criminal record exists" must {
+        "Return CriminalRecord instance" in {
 
           val dni = PersonFactory.createDni
-          val personDto = PersonFactory.createPersonDto
+          val criminalRecordDto = CriminalRecordFactory.getInstance
           val wsClient = mock[StandaloneAhcWSClient]
           val request = mock[StandaloneAhcWSRequest]
           val response = mock[StandaloneAhcWSResponse]
@@ -32,15 +31,15 @@ class RepublicIdentificationServiceTest extends TestKit {
           doReturn(request).when(wsClient).url(anyString)
           doReturn(futureResponse).when(request).get()
           doReturn(200).when(response).status
-          doReturn(Json.toJson(personDto).toString()).when(response).body
+          doReturn(Json.toJson(criminalRecordDto).toString()).when(response).body
 
-          val result = FutureTool.awaitResult(RepublicIdentificationService.getPerson(dni).run(wsClient).value.runToFuture)
+          val result = FutureTool.awaitResult(RepublicPoliceService.getCriminalRecord(dni).run(wsClient).value.runToFuture)
 
-          result.map( _.exists(_.isInstanceOf[Person]) mustBe true )
+          result.map( _.exists(_.isInstanceOf[CriminalRecordDto]) mustBe true )
         }
       }
 
-      "The person does not exist" must {
+      "The criminal record does not exist" must {
         "Not return any value" in {
 
           val dni = PersonFactory.createDni
@@ -53,7 +52,7 @@ class RepublicIdentificationServiceTest extends TestKit {
           doReturn(futureResponse).when(request).get()
           doReturn(204).when(response).status
 
-          val result = FutureTool.awaitResult(RepublicIdentificationService.getPerson(dni).run(wsClient).value.runToFuture)
+          val result = FutureTool.awaitResult(RepublicPoliceService.getCriminalRecord(dni).run(wsClient).value.runToFuture)
 
           result mustBe Right(None)
         }
@@ -74,7 +73,7 @@ class RepublicIdentificationServiceTest extends TestKit {
           doReturn(500).when(response).status
           doReturn(errorMessage).when(response).body
 
-          val result = FutureTool.awaitResult(RepublicIdentificationService.getPerson(dni).run(wsClient).value.runToFuture)
+          val result = FutureTool.awaitResult(RepublicPoliceService.getCriminalRecord(dni).run(wsClient).value.runToFuture)
 
           result mustBe Left(ErrorDto(APPLICATION, errorMessage))
         }
@@ -91,9 +90,9 @@ class RepublicIdentificationServiceTest extends TestKit {
           doReturn(request).when(wsClient).url(anyString)
           doReturn(futureResponse).when(request).get()
 
-          val result = FutureTool.awaitResult(RepublicIdentificationService.getPerson(dni).run(wsClient).value.runToFuture)
+          val result = FutureTool.awaitResult(RepublicPoliceService.getCriminalRecord(dni).run(wsClient).value.runToFuture)
 
-          result mustBe Left(ErrorDto(TECHNICAL, s"Has occurred an error getting data for person with id ${dni.number}"))
+          result mustBe Left(ErrorDto(TECHNICAL, s"Has occurred an error getting criminal record for person with id ${dni.number}"))
         }
       }
 

@@ -11,14 +11,15 @@ import monix.eval.Task
 import monix.execution.ExecutionModel.AlwaysAsyncExecution
 import monix.execution.UncaughtExceptionReporter
 import monix.execution.schedulers.ExecutorScheduler
+import monix.execution.Scheduler.Implicits.global
 
 object Main extends App {
 
-  implicit val commandSchedulerTest: ExecutorScheduler = ExecutorScheduler(
-    Executors.newFixedThreadPool( 10 ),
-    UncaughtExceptionReporter( t => println( s"this should not happen: ${t.getMessage}" ) ),
-    AlwaysAsyncExecution
-  )
+//  implicit val commandSchedulerTest: ExecutorScheduler = ExecutorScheduler(
+//    Executors.newFixedThreadPool( 10 ),
+//    UncaughtExceptionReporter( t => println( s"this should not happen: ${t.getMessage}" ) ),
+//    AlwaysAsyncExecution
+//  )
 
   WebServerStub.startStubServer()
   implicit val system: ActorSystem = ActorSystem()
