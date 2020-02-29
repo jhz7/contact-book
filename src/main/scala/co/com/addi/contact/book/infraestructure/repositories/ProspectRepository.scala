@@ -17,10 +17,4 @@ object ProspectRepository extends ProspectBaseRepository {
     EitherT.rightT[Task, ErrorDto](person)
   }
 
-  override def getAll: CustomEitherT[List[Person]] = {
-    val people: List[Person] = ProspectsDataBase.data.map(personDto => PersonTransformer.toPerson(personDto._2)).toList
-
-    EitherT.rightT[Task, ErrorDto](people)
-  }
-
 }

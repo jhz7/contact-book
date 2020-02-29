@@ -7,5 +7,4 @@ trait ProspectBaseRepository {
 
   def get(dni: Dni): CustomEitherT[Option[Person]]
 
-  def getAll: CustomEitherT[List[Person]]
 }
