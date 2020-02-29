@@ -6,13 +6,8 @@ import scala.util.Random
 
 trait ProspectRatingService {
 
-  def rate(dni: Dni): Int
+  def rate(dni: Dni): Int = Random.nextInt(100) + 1
 
 }
 
-object ProspectRatingService extends ProspectRatingService {
-
-  def rate(dni: Dni): Int =
-    Random.nextInt(100) + 1
-
-}
+object ProspectRatingService extends ProspectRatingService
