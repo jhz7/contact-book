@@ -29,6 +29,7 @@ object RepublicPoliceService extends RepublicPoliceService with WebClientHelper{
 
   def getCriminalRecord( dni: Dni ): Reader[StandaloneAhcWSClient, CustomEitherT[Option[CriminalRecordDto]]] = Reader {
     wsClient: StandaloneAhcWSClient =>
+      Logging.info(s"Getting criminal record for prospect with id ${dni.number}", getClass)
 
       stubWebServer(dni.number)
 

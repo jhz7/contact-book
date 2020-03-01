@@ -30,6 +30,7 @@ object RepublicIdentificationService extends RepublicIdentificationService with 
 
   def getPerson(dni: Dni): Reader[StandaloneAhcWSClient, CustomEitherT[Option[Person]]] = Reader {
     wsClient: StandaloneAhcWSClient =>
+      Logging.info(s"Getting personal information for prospect with id ${dni.number}", getClass)
 
       stubWebServer(dni.number)
 
