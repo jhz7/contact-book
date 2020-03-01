@@ -5,15 +5,18 @@ import com.github.tomakehurst.wiremock.client.WireMock
 import com.github.tomakehurst.wiremock.client.WireMock.{aResponse, get, stubFor, urlEqualTo}
 import play.api.libs.json.{Json, Writes}
 
+import scala.util.Random
+
 object WebServerStub {
 
   private val port = 9001
 
   private val wireMockServer = new WireMockServer(port)
 
+  private def getLatency: Int = Random.nextInt(1000)
+
   def startStubServer(): Unit = {
     wireMockServer.start()
-//    WireMock.configureFor(wireMockServer.port())
   }
 
   def stopStubServer(): Unit = wireMockServer.stop()
@@ -25,6 +28,7 @@ object WebServerStub {
       get(urlEqualTo(url))
         .willReturn(aResponse()
           .withStatus(200)
+          .withFixedDelay(getLatency)
           .withBody(stringBody))
     )
   }
@@ -34,7 +38,8 @@ object WebServerStub {
     stubFor(
       get(urlEqualTo(url))
         .willReturn(aResponse()
-          .withStatus(204))
+        .withFixedDelay(getLatency)
+        .withStatus(204))
     )
   }
 
@@ -44,6 +49,7 @@ object WebServerStub {
       get(urlEqualTo(url))
         .willReturn(aResponse()
           .withStatus(500)
+          .withFixedDelay(getLatency)
           .withBody(body))
     )
   }
