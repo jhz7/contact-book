@@ -12,7 +12,7 @@ import scala.concurrent.Future
 
 class RepublicPoliceServiceTest extends TestKit {
 
-  before( WebServerStub.startStubServer() )
+  override def beforeEach(): Unit = WebServerStub.startStubServer()
 
   "RepublicPoliceService" should {
 
@@ -120,6 +120,6 @@ class RepublicPoliceServiceTest extends TestKit {
     }
   }
 
-  after( WebServerStub.stopStubServer() )
+  override def afterEach(): Unit =  WebServerStub.stopStubServer()
 
 }

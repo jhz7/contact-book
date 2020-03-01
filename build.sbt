@@ -15,3 +15,6 @@ libraryDependencies += "org.slf4j"                   % "slf4j-simple"           
 
 libraryDependencies += "org.specs2"                 %% "specs2-mock"            % "4.8.3"    % Test
 libraryDependencies += "org.scalatest"              %% "scalatest"              % "3.2.0-M2" % Test
+
+
+parallelExecution in Test := false
