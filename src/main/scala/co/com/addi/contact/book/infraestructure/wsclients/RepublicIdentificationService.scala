@@ -1,11 +1,11 @@
 package co.com.addi.contact.book.infraestructure.wsclients
 
 import cats.data.{EitherT, Reader}
+import co.com.addi.contact.book.application.commons.Logging
 import co.com.addi.contact.book.application.dtos.{ErrorDto, PersonDto, TECHNICAL}
 import co.com.addi.contact.book.application.types.{CustomEither, CustomEitherT}
 import co.com.addi.contact.book.domain.models.{Dni, Person}
 import co.com.addi.contact.book.infraestructure.databases.RepublicIdentificationDataBase
-import co.com.addi.contact.book.infraestructure.logger.Logging
 import co.com.addi.contact.book.infraestructure.transformers.PersonTransformer
 import co.com.addi.contact.book.infraestructure.webserver.WebServerStub
 import monix.eval.Task

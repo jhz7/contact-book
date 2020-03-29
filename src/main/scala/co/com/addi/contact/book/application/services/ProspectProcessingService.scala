@@ -4,11 +4,11 @@ import akka.Done
 import cats.data.{EitherT, Reader}
 import cats.implicits._
 import co.com.addi.contact.book.application.Dependencies
+import co.com.addi.contact.book.application.commons.Logging
 import co.com.addi.contact.book.application.dtos.{APPLICATION, ErrorDto}
 import co.com.addi.contact.book.application.enhancements.CustomEitherEnhancement._
 import co.com.addi.contact.book.application.types.{CustomEither, CustomEitherT}
 import co.com.addi.contact.book.domain.models.{Dni, Person}
-import co.com.addi.contact.book.infraestructure.logger.Logging
 import monix.eval.Task
 
 trait ProspectProcessingService {
@@ -26,7 +26,7 @@ trait ProspectProcessingService {
         } yield Done
 
       processing.leftMap(error => {
-        Logging.error(error.message, None, getClass)
+        Logging.error(error.message, getClass)
         error
       })
   }
