@@ -6,7 +6,9 @@ import co.com.addi.contact.book.application.Dependencies
 import co.com.addi.contact.book.application.types.CustomEither
 import co.com.addi.contact.book.domain.models.{Dni, DniCode}
 import co.com.addi.contact.book.infraestructure.databases.ProspectsDataBase
-import co.com.addi.contact.book.infraestructure.webserver.WebServerStub
+import co.com.addi.contactbook.application.Dependencies
+import co.com.addi.contactbook.infraestructure.databases.ProspectsDataBase
+import co.com.addi.contactbook.infraestructure.webserver.WebServerStub
 import monix.eval.Task
 import monix.execution.ExecutionModel.AlwaysAsyncExecution
 import monix.execution.schedulers.SchedulerService
