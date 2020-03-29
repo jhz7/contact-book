@@ -1,12 +1,12 @@
 package co.com.addi.contact.book.infraestructure.transformers
 
 import co.com.addi.contact.book.application.dtos.PersonDto
-import co.com.addi.contact.book.domain.models.{Dni, DniCode, Person}
+import co.com.addi.contact.book.domain.models.{Dni, DniCode, Contact}
 
 object PersonTransformer {
 
-  def toPerson(personDto: PersonDto): Person =
-    Person(
+  def toPerson(personDto: PersonDto): Contact =
+    Contact(
       firstName = personDto.firstName,
       lastName = personDto.lastName,
       dni = Dni(

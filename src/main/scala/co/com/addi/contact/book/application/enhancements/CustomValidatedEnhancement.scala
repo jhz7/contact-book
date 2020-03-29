@@ -1,8 +1,9 @@
 package co.com.addi.contact.book.application.enhancements
 
 import cats.data.Validated.{Invalid, Valid}
-import co.com.addi.contact.book.application.dtos.{APPLICATION, BUSINESS, ErrorDto, TECHNICAL}
 import co.com.addi.contact.book.application.types.{CustomEither, CustomValidated}
+import co.com.addi.contact.book.domain.models.Error
+import co.com.addi.contact.book.domain.types.{APPLICATION, BUSINESS, TECHNICAL}
 
 object CustomValidatedEnhancement {
 
@@ -14,16 +15,16 @@ object CustomValidatedEnhancement {
         case Invalid(errors) => Left(unifyErrors(errors.toList))
       }
 
-    private def unifyErrors(errors: List[ErrorDto]): ErrorDto = {
+    private def unifyErrors(errors: List[Error]): Error = {
 
-      val typeErrors = errors.map(_.`type`)
+      val typeErrors = errors.map(_.code)
       val unifiedMessage = errors.map(_.message).mkString(". ")
 
       (typeErrors.contains(BUSINESS), typeErrors.contains(APPLICATION), typeErrors.contains(TECHNICAL)) match {
-        case (true, _, _) => ErrorDto(BUSINESS, unifiedMessage)
-        case (_, true, _) => ErrorDto(APPLICATION, unifiedMessage)
-        case (_, _, true) => ErrorDto(TECHNICAL, unifiedMessage)
-        case _            => ErrorDto(APPLICATION, unifiedMessage)
+        case (true, _, _) => Error(BUSINESS, unifiedMessage)
+        case (_, true, _) => Error(APPLICATION, unifiedMessage)
+        case (_, _, true) => Error(TECHNICAL, unifiedMessage)
+        case _            => Error(APPLICATION, unifiedMessage)
       }
     }
   }

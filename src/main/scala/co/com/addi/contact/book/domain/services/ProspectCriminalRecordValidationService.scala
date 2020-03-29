@@ -1,9 +1,9 @@
 package co.com.addi.contact.book.domain.services
 
 import akka.Done
-import co.com.addi.contact.book.application.dtos.{BUSINESS, CriminalRecordDto, ErrorDto}
+import co.com.addi.contact.book.application.dtos.{BUSINESS, CriminalRecordDto}
 import co.com.addi.contact.book.application.types.CustomEither
-import co.com.addi.contact.book.domain.models.Dni
+import co.com.addi.contact.book.domain.models.{BUSINESS, Dni, Error}
 
 trait ProspectCriminalRecordValidationService {
 
@@ -17,6 +17,6 @@ object ProspectCriminalRecordValidationService extends ProspectCriminalRecordVal
     if(criminalRecordDto.isEmpty || criminalRecordDto.exists(_.descriptions.isEmpty))
       Right(Done)
     else
-      Left(ErrorDto(BUSINESS, s"The criminal record for the prospect ${dni.number} is not valid"))
+      Left(Error(BUSINESS, s"The criminal record for the prospect ${dni.number} is not valid"))
 
 }

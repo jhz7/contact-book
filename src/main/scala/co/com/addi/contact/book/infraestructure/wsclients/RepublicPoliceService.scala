@@ -2,9 +2,9 @@ package co.com.addi.contact.book.infraestructure.wsclients
 
 import cats.data.{EitherT, Reader}
 import co.com.addi.contact.book.application.commons.Logging
-import co.com.addi.contact.book.application.dtos.{CriminalRecordDto, ErrorDto, TECHNICAL}
+import co.com.addi.contact.book.application.dtos.{CriminalRecordDto, TECHNICAL}
 import co.com.addi.contact.book.application.types.{CustomEither, CustomEitherT}
-import co.com.addi.contact.book.domain.models.Dni
+import co.com.addi.contact.book.domain.models.{Dni, Error, TECHNICAL}
 import co.com.addi.contact.book.infraestructure.databases.RepublicPoliceDatabase
 import co.com.addi.contact.book.infraestructure.webserver.WebServerStub
 import monix.eval.Task
@@ -40,8 +40,8 @@ object RepublicPoliceService extends RepublicPoliceService with WebClientHelper{
             .recover[CustomEither[Option[CriminalRecordDto]]]{
               case error: Throwable =>
                 val message = s"Has occurred an error getting criminal record for person with id ${dni.number}"
-                Logging.error(message, Some(error), getClass)
-                Left(ErrorDto(TECHNICAL, message))
+                Logging.error(message, getClass, Some(error))
+                Left(Error(TECHNICAL, message))
             }
         )
       }
