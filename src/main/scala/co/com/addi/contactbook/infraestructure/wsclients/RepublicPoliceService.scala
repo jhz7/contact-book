@@ -12,7 +12,7 @@ import co.com.addi.contactbook.infraestructure.webserver.WebServerStub
 import monix.eval.Task
 import play.api.libs.ws.ahc.StandaloneAhcWSClient
 
-class RepublicPoliceService(val wsClient: StandaloneAhcWSClient) extends RepublicPoliceServiceContract with WebClientHelper{
+case class RepublicPoliceService(wsClient: StandaloneAhcWSClient) extends RepublicPoliceServiceContract with WebClientHelper{
 
   private val webServerHost: String = "http://localhost:9001"
   private val webResourcePath: String => String = id => s"/republic-police-service/person/$id/criminal-record"

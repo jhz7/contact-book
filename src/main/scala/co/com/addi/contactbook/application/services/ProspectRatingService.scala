@@ -4,10 +4,10 @@ import co.com.addi.contactbook.domain.models.Dni
 
 import scala.util.Random
 
-trait ProspectRatingService {
+trait ProspectRatingServiceBase {
 
   def rate(dni: Dni): Int = Random.nextInt(100) + 1
 
 }
 
-object ProspectRatingService extends ProspectRatingService
+object ProspectRatingService extends ProspectRatingServiceBase

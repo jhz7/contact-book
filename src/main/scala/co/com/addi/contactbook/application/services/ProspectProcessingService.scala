@@ -3,15 +3,15 @@ package co.com.addi.contactbook.application.services
 import akka.Done
 import cats.data.{EitherT, Reader}
 import cats.implicits._
-import co.com.addi.contactbook.application.Dependencies
 import co.com.addi.contactbook.application.commons.Logging
 import co.com.addi.contactbook.domain.models.{Contact, Dni, Error}
+import co.com.addi.contactbook.infraestructure.ServiceLocator
 import monix.eval.Task
 
-trait ProspectProcessingService {
+trait ProspectProcessingServiceBase {
 
-  def process(dni: Dni): Reader[Dependencies, CustomEitherT[Done]] = Reader {
-    dependencies: Dependencies =>
+  def process(dni: Dni): Reader[ServiceLocator, CustomEitherT[Done]] = Reader {
+    dependencies: ServiceLocator =>
       Logging.info(s"Processing prospect with id ${dni.number}...", getClass)
 
       val processing: CustomEitherT[Done] =
@@ -28,16 +28,16 @@ trait ProspectProcessingService {
       })
   }
 
-  private def getProspect(dni: Dni): Reader[Dependencies, CustomEitherT[Contact]] = Reader {
-    dependencies: Dependencies =>
+  private def getProspect(dni: Dni): Reader[ServiceLocator, CustomEitherT[Contact]] = Reader {
+    dependencies: ServiceLocator =>
       dependencies.prospectRepository.get(dni) flatMap{
         case Some(person) => EitherT.rightT[Task, Error](person)
         case None         => EitherT.leftT(Error(APPLICATION, s"The prospect ${dni.number} does not exist in temporary directory"))
       }
   }
 
-  private def validateProspectInformationWithRepublicSystem(prospect: Contact): Reader[Dependencies, CustomEitherT[Done]] = Reader {
-    dependencies: Dependencies =>
+  private def validateProspectInformationWithRepublicSystem(prospect: Contact): Reader[ServiceLocator, CustomEitherT[Done]] = Reader {
+    dependencies: ServiceLocator =>
 
       val validationData = validateProspectData(prospect).run(dependencies).value
       val validationCriminalRecord = validateProspectCriminalRecord(prospect).run(dependencies).value
@@ -52,8 +52,8 @@ trait ProspectProcessingService {
       EitherT(validationExecution)
   }
 
-  private def validateProspectData(prospect: Contact): Reader[Dependencies, CustomEitherT[Done]] = Reader {
-    dependencies: Dependencies =>
+  private def validateProspectData(prospect: Contact): Reader[ServiceLocator, CustomEitherT[Done]] = Reader {
+    dependencies: ServiceLocator =>
       Logging.info(s"Validating personal data for prospect ${prospect.dni.number}...", getClass)
 
       dependencies.republicIdentificationService
@@ -64,8 +64,8 @@ trait ProspectProcessingService {
         }
   }
 
-  private def validateProspectCriminalRecord(prospect: Contact): Reader[Dependencies, CustomEitherT[Done]] = Reader {
-    dependencies: Dependencies =>
+  private def validateProspectCriminalRecord(prospect: Contact): Reader[ServiceLocator, CustomEitherT[Done]] = Reader {
+    dependencies: ServiceLocator =>
       Logging.info(s"Validating criminal record for prospect ${prospect.dni.number}...", getClass)
 
       dependencies.republicPoliceService
@@ -75,8 +75,8 @@ trait ProspectProcessingService {
         )
   }
 
-  private def validateProspectRating(prospect: Contact): Reader[Dependencies, CustomEitherT[Done]] = Reader {
-    dependencies: Dependencies =>
+  private def validateProspectRating(prospect: Contact): Reader[ServiceLocator, CustomEitherT[Done]] = Reader {
+    dependencies: ServiceLocator =>
       Logging.info(s"Validating rating for prospect ${prospect.dni.number}...", getClass)
 
       val score = dependencies.prospectRatingService.rate(prospect.dni)
@@ -85,8 +85,8 @@ trait ProspectProcessingService {
         .validateScore(prospect.dni, score).toCustomEitherT
   }
 
-  private def save(prospect: Contact): Reader[Dependencies, CustomEitherT[Done]] = Reader {
-    dependencies: Dependencies =>
+  private def save(prospect: Contact): Reader[ServiceLocator, CustomEitherT[Done]] = Reader {
+    dependencies: ServiceLocator =>
 
       dependencies.contactRepository.save(prospect).map( _ => {
         Logging.info(s"Contact ${prospect.dni.number} saved successfully!!", getClass)
@@ -96,4 +96,4 @@ trait ProspectProcessingService {
 
 }
 
-object ProspectProcessingService extends ProspectProcessingService
+object ProspectProcessingService extends ProspectProcessingServiceBase

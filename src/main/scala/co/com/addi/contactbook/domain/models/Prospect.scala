@@ -6,13 +6,15 @@ import co.com.addi.contactbook.domain.aliases._
 import co.com.addi.contactbook.domain.enhancements.CustomValidatedEnhancement._
 import co.com.addi.contactbook.domain.types.BUSINESS
 
-class Prospect( val firstName: String, val lastName: String, val dni: Dni ) {
+case class Prospect(firstName: String, lastName: String, dni: Dni) {
 
-  def validateScore(minimumScore: Int, currentScore: Int): CustomEither[Done] = {
-    if(currentScore < minimumScore)
+  private val minimumAllowedScore = 60
+
+  def validateScore(currentlyObtainedScore: Int): CustomEither[Done] = {
+    if(currentlyObtainedScore < minimumAllowedScore)
       return Left(Error(BUSINESS, s"The score for the prospect ${this.dni.number} is below the minimum allowed"))
 
-    return Right(Done)
+    Right(Done)
   }
 
   def validateEqualityData(that: Prospect): CustomEither[Done] =
@@ -30,7 +32,7 @@ class Prospect( val firstName: String, val lastName: String, val dni: Dni ) {
     if(!(thisField == thatField))
       return Error(BUSINESS, s"The $fieldName value is not valid for prospect ${this.dni.code.description}: ${this.dni.number}").invalidNel
 
-    return Done.valid
+    Done.valid
   }
 
 }

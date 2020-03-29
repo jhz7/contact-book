@@ -30,8 +30,7 @@ dada por el sistema externo.
  Un prospecto puede ser agregado al directorio de contactos con un puntaje superior o igual a 60 pts.
  * Preferiblememte desarrolle la prueba con un lenguaje que corra sobre la JVM, puede usar paradigma funcional u OOP con 
  las librerías que considere necesarias.  
- * Entregue el código fuente en un repositorio privado de `github`.
- * Tenga en cuenta que se esoera validar su capacidad de estructurar una buena solución al problema, y no necesariamente 
+ * Tenga en cuenta que se espera validar su capacidad de estructurar una buena solución al problema, y no necesariamente 
  su capacidad de desarrollar algoritmos.
  * Si, se espera que existan pruebas unitarias que prueben la correctitud de la solución desarrollada en varios escenarios.
  * No, se espera que desarrolle una interfaz de usuario o que la aplicación sea clente servidor.

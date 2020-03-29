@@ -2,11 +2,10 @@ import java.util.concurrent.Executors
 
 import akka.Done
 import akka.actor.ActorSystem
-import co.com.addi.contact.book.application.Dependencies
-import co.com.addi.contact.book.application.types.CustomEither
-import co.com.addi.contact.book.domain.models.{Dni, DniCode}
-import co.com.addi.contact.book.infraestructure.databases.ProspectsDataBase
-import co.com.addi.contactbook.application.Dependencies
+import co.com.addi.contactbook.domain.aliases.CustomEither
+import co.com.addi.contactbook.domain.models.Dni
+import co.com.addi.contactbook.domain.types.DniCode
+import co.com.addi.contactbook.infraestructure.ServiceLocator
 import co.com.addi.contactbook.infraestructure.datasets.ProspectsDataSet
 import co.com.addi.contactbook.infraestructure.webserver.WebServerStub
 import monix.eval.Task
@@ -24,7 +23,7 @@ object Main extends App {
 
   WebServerStub.startStubServer()
   implicit val system: ActorSystem = ActorSystem()
-  val dependencies = new Dependencies()
+  val dependencies = new ServiceLocator()
 
   val tasks: List[Task[CustomEither[Done]]] = ProspectsDataSet.data.values.toList.map(personDto => {
     val dni = Dni(personDto.id, DniCode(personDto.typeId))

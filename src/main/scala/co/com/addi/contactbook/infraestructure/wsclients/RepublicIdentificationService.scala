@@ -14,7 +14,7 @@ import monix.eval.Task
 import play.api.libs.ws.ahc.StandaloneAhcWSClient
 
 
-class RepublicIdentificationService(val wsClient: StandaloneAhcWSClient) extends RepublicIdentificationServiceContract with WebClientHelper{
+case class RepublicIdentificationService(wsClient: StandaloneAhcWSClient) extends RepublicIdentificationServiceContract with WebClientHelper{
 
   private val webServerHost: String = "http://localhost:9001"
   private val webResourcePath: String => String = id => s"/republic-id-service/person/$id/info"
