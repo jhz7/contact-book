@@ -3,7 +3,6 @@ package co.com.addi.contactbook.application
 import akka.actor.ActorSystem
 import akka.stream.{Materializer, SystemMaterializer}
 import co.com.addi.contactbook.application.services.{ProspectProcessingService, ProspectRatingService}
-import co.com.addi.contactbook.domain.contracts.ProspectBaseRepository
 import co.com.addi.contactbook.domain.contracts.repositories.{ContactRepositoryContract, ProspectRepositoryContract}
 import co.com.addi.contactbook.infraestructure.repositories.{ContactRepository, ProspectRepository}
 import co.com.addi.contactbook.infraestructure.wsclients.{RepublicIdentificationService, RepublicPoliceService}
