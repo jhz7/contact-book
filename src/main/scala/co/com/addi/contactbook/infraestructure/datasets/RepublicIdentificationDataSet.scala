@@ -1,8 +1,8 @@
-package co.com.addi.contactbook.infraestructure.databases
+package co.com.addi.contactbook.infraestructure.datasets
 
 import co.com.addi.contactbook.application.dtos.PersonDto
 
-object RepublicIdentificationDataBase {
+object RepublicIdentificationDataSet {
 
   val data: Map[String, PersonDto] = Map(
     "1" -> PersonDto(id = "1", typeId = "CC", expeditionIdPlace = "Medell\u00EDn Antioquia", firstName = "Jhon", lastName = "Zambrano"),

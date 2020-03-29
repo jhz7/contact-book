@@ -7,7 +7,7 @@ import co.com.addi.contactbook.domain.aliases.{CustomEither, CustomEitherT}
 import co.com.addi.contactbook.domain.contracts.wsclients.RepublicPoliceServiceContract
 import co.com.addi.contactbook.domain.models.{Dni, Error}
 import co.com.addi.contactbook.domain.types.TECHNICAL
-import co.com.addi.contactbook.infraestructure.databases.RepublicPoliceDatabase
+import co.com.addi.contactbook.infraestructure.datasets.RepublicPoliceDataSet
 import co.com.addi.contactbook.infraestructure.webserver.WebServerStub
 import monix.eval.Task
 import play.api.libs.ws.ahc.StandaloneAhcWSClient
@@ -37,7 +37,7 @@ class RepublicPoliceService(val wsClient: StandaloneAhcWSClient) extends Republi
   }
 
   private def stubWebServer(id: String): Unit =
-    RepublicPoliceDatabase.data.get(id) match {
+    RepublicPoliceDataSet.data.get(id) match {
       case Some(criminalRecordDto) => WebServerStub.mockSuccessGetRequest(webResourcePath(id), criminalRecordDto)
       case None                    => WebServerStub.mockSuccessNoContentGetRequest(webResourcePath(id))
     }

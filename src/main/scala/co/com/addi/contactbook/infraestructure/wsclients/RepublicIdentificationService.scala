@@ -7,7 +7,7 @@ import co.com.addi.contactbook.domain.aliases.{CustomEither, CustomEitherT}
 import co.com.addi.contactbook.domain.contracts.wsclients.RepublicIdentificationServiceContract
 import co.com.addi.contactbook.domain.models.{Contact, Dni, Error}
 import co.com.addi.contactbook.domain.types.TECHNICAL
-import co.com.addi.contactbook.infraestructure.databases.RepublicIdentificationDataBase
+import co.com.addi.contactbook.infraestructure.datasets.RepublicIdentificationDataSet
 import co.com.addi.contactbook.infraestructure.transformers.PersonTransformer
 import co.com.addi.contactbook.infraestructure.webserver.WebServerStub
 import monix.eval.Task
@@ -42,7 +42,7 @@ class RepublicIdentificationService(val wsClient: StandaloneAhcWSClient) extends
   }
 
   private def stubWebServer(id: String): Unit =
-    RepublicIdentificationDataBase.data.get(id) match {
+    RepublicIdentificationDataSet.data.get(id) match {
       case Some(personDto) => WebServerStub.mockSuccessGetRequest(webResourcePath(id), personDto)
       case None            => WebServerStub.mockSuccessNoContentGetRequest(webResourcePath(id))
     }

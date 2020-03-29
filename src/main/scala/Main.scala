@@ -7,7 +7,7 @@ import co.com.addi.contact.book.application.types.CustomEither
 import co.com.addi.contact.book.domain.models.{Dni, DniCode}
 import co.com.addi.contact.book.infraestructure.databases.ProspectsDataBase
 import co.com.addi.contactbook.application.Dependencies
-import co.com.addi.contactbook.infraestructure.databases.ProspectsDataBase
+import co.com.addi.contactbook.infraestructure.datasets.ProspectsDataSet
 import co.com.addi.contactbook.infraestructure.webserver.WebServerStub
 import monix.eval.Task
 import monix.execution.ExecutionModel.AlwaysAsyncExecution
@@ -26,7 +26,7 @@ object Main extends App {
   implicit val system: ActorSystem = ActorSystem()
   val dependencies = new Dependencies()
 
-  val tasks: List[Task[CustomEither[Done]]] = ProspectsDataBase.data.values.toList.map(personDto => {
+  val tasks: List[Task[CustomEither[Done]]] = ProspectsDataSet.data.values.toList.map(personDto => {
     val dni = Dni(personDto.id, DniCode(personDto.typeId))
     dependencies.prospectProcessingService.process(dni).run(dependencies).value
   })
