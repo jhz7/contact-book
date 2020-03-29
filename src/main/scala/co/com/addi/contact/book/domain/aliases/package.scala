@@ -1,10 +1,10 @@
-package co.com.addi.contact.book.application
+package co.com.addi.contact.book.domain
 
 import cats.data.{EitherT, ValidatedNel}
 import co.com.addi.contact.book.domain.models.Error
 import monix.eval.Task
 
-package object types {
+package object aliases {
 
   type CustomEither[A] = Either[Error, A]
 

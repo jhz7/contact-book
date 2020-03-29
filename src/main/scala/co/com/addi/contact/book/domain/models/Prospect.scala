@@ -2,17 +2,20 @@ package co.com.addi.contact.book.domain.models
 
 import akka.Done
 import cats.implicits._
-import co.com.addi.contact.book.application.types.{CustomEither, CustomValidated}
+import co.com.addi.contact.book.domain.aliases._
+import co.com.addi.contact.book.domain.enhancements.CustomValidatedEnhancement._
 import co.com.addi.contact.book.domain.types.BUSINESS
-import co.com.addi.contact.book.application.enhancements.CustomValidatedEnhancement._
 
-class Prospect(
-  val firstName: String,
-  val lastName:  String,
-  val dni:       Dni
-) {
+class Prospect( val firstName: String, val lastName: String, val dni: Dni ) {
 
-  def isEqual(that: Prospect): CustomEither[Done] =
+  def validateScore(minimumScore: Int, currentScore: Int): CustomEither[Done] = {
+    if(currentScore < minimumScore)
+      return Left(Error(BUSINESS, s"The score for the prospect ${this.dni.number} is below the minimum allowed"))
+
+    return Right(Done)
+  }
+
+  def validateData(that: Prospect): CustomEither[Done] =
     (
       validateItem(that.dni.number, this.dni.number, "DNI Number"),
       validateItem(that.dni.code, this.dni.code, "DNI Code"),
@@ -23,10 +26,11 @@ class Prospect(
       .toCustomEither
 
 
-  private def validateItem[T](thisField: T, thatField: T, fieldName: String): CustomValidated[Done] =
-    if(thisField == thatField)
-      Done.valid
-    else
-      Error(BUSINESS, s"The $fieldName value is not valid for prospect ${this.dni.code.description}: ${this.dni.number}").invalidNel
+  private def validateItem[T](thisField: T, thatField: T, fieldName: String): CustomValidated[Done] = {
+    if(!(thisField == thatField))
+      return Error(BUSINESS, s"The $fieldName value is not valid for prospect ${this.dni.code.description}: ${this.dni.number}").invalidNel
+
+    return Done.valid
+  }
 
 }

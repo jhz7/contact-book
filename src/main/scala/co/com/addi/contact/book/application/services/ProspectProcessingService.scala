@@ -6,7 +6,7 @@ import cats.implicits._
 import co.com.addi.contact.book.application.Dependencies
 import co.com.addi.contact.book.application.commons.Logging
 import co.com.addi.contact.book.application.dtos.APPLICATION
-import co.com.addi.contact.book.application.enhancements.CustomEitherEnhancement._
+import co.com.addi.contact.book.domain.enhancements.CustomEitherEnhancement._
 import co.com.addi.contact.book.application.types.{CustomEither, CustomEitherT}
 import co.com.addi.contact.book.domain.models.{APPLICATION, Contact, Dni, Error}
 import monix.eval.Task

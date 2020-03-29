@@ -1,4 +1,4 @@
-package co.com.addi.contact.book.application.enhancements
+package co.com.addi.contact.book.domain.enhancements
 
 import cats.data.EitherT
 import co.com.addi.contact.book.application.types.{CustomEither, CustomEitherT}

@@ -1,7 +1,7 @@
-package co.com.addi.contact.book.application.enhancements
+package co.com.addi.contact.book.domain.enhancements
 
 import cats.data.Validated.{Invalid, Valid}
-import co.com.addi.contact.book.application.types.{CustomEither, CustomValidated}
+import co.com.addi.contact.book.domain.aliases._
 import co.com.addi.contact.book.domain.models.Error
 import co.com.addi.contact.book.domain.types.{APPLICATION, BUSINESS, TECHNICAL}
 
