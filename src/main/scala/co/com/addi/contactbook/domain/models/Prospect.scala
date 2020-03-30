@@ -8,10 +8,10 @@ import co.com.addi.contactbook.domain.types.BUSINESS
 
 case class Prospect(firstName: String, lastName: String, dni: Dni) {
 
-  private val minimumAllowedScore = 60
+  private val minimumAllowedScoreToBecomeAcontact = 60
 
   def validateScore(currentlyObtainedScore: Int): CustomEither[Done] = {
-    if(currentlyObtainedScore < minimumAllowedScore)
+    if(currentlyObtainedScore < minimumAllowedScoreToBecomeAcontact)
       return Left(Error(BUSINESS, s"The score for the prospect ${this.dni.number} is below the minimum allowed"))
 
     Right(Done)

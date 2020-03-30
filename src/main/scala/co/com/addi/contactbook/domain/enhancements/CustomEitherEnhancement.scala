@@ -6,16 +6,13 @@ import co.com.addi.contactbook.domain.models.Error
 
 object CustomEitherEnhancement {
 
-  implicit class ConverToCustomEitherT[A](val either: CustomEither[A]) {
-
-    def toCustomEitherT: CustomEitherT[A] =
-      EitherT.fromEither(either)
+  implicit class ConvertToCustomEitherT[A](val either: CustomEither[A]) {
+    def toCustomEitherT: CustomEitherT[A] = EitherT.fromEither(either)
   }
 
   implicit class TraverseEither[A](val values: List[CustomEither[A]]) {
 
     def group: CustomEither[List[A]] = {
-
       val leftProjections = values.filter(_.isLeft)
       val rightProjections = values.filter(_.isRight)
 

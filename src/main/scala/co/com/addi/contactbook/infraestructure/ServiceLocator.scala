@@ -21,6 +21,7 @@ class ServiceLocator(implicit var system: ActorSystem) {
   val contactRepository: ContactRepositoryContract = ContactRepository
 
   val prospectRatingService: ProspectRatingServiceBase = ProspectRatingService
-  val prospectProcessingService: ProspectProcessingServiceBase = ProspectProcessingService
+  val validationProspectVsRepublicSystemService = ValidationProspectVsRepublicSystemService(republicIdentificationService, republicPoliceService)
+  val prospectProcessingService = ProspectProcessingService(prospectRepository, prospectRatingService, contactRepository, validationProspectVsRepublicSystemService)
 
 }
