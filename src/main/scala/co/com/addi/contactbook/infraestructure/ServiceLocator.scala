@@ -11,8 +11,8 @@ import play.api.libs.ws.ahc.StandaloneAhcWSClient
 
 class ServiceLocator(implicit var system: ActorSystem) {
 
-  val wsClient = StandaloneAhcWSClient()
   private implicit var materializer: Materializer = SystemMaterializer(system).materializer
+  val wsClient = StandaloneAhcWSClient()
 
   val republicIdentificationService: RepublicIdentificationServiceContract = RepublicIdentificationService(wsClient)
   val republicPoliceService: RepublicPoliceServiceContract = RepublicPoliceService(wsClient)

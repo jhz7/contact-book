@@ -2,24 +2,27 @@ package co.com.addi.contactbook.application.services
 
 import akka.Done
 import cats.data.{EitherT, Reader}
-import cats.implicits._
 import co.com.addi.contactbook.application.commons.Logging
-import co.com.addi.contactbook.domain.models.{Contact, Dni, Error}
-import co.com.addi.contactbook.infraestructure.ServiceLocator
+import co.com.addi.contactbook.domain.aliases._
+import co.com.addi.contactbook.domain.contracts.repositories.{ContactRepositoryContract, ProspectRepositoryContract}
+import co.com.addi.contactbook.domain.contracts.wsclients.{RepublicIdentificationServiceContract, RepublicPoliceServiceContract}
+import co.com.addi.contactbook.domain.enhancements.CustomEitherEnhancement._
+import co.com.addi.contactbook.domain.models.{Contact, Dni, Error, Prospect}
+import co.com.addi.contactbook.domain.types.{APPLICATION, BUSINESS}
 import monix.eval.Task
 
 trait ProspectProcessingServiceBase {
 
-  def process(dni: Dni): Reader[ServiceLocator, CustomEitherT[Done]] = Reader {
-    dependencies: ServiceLocator =>
+  def process(dni: Dni): Reader[(ProspectRepositoryContract, RepublicIdentificationServiceContract, RepublicPoliceServiceContract, ProspectRatingServiceBase, ContactRepositoryContract), CustomEitherT[Done]] = Reader {
+    dependencies: (ProspectRepositoryContract, RepublicIdentificationServiceContract, RepublicPoliceServiceContract, ProspectRatingServiceBase, ContactRepositoryContract) =>
       Logging.info(s"Processing prospect with id ${dni.number}...", getClass)
 
       val processing: CustomEitherT[Done] =
         for {
-          prospect <- getProspect(dni).run(dependencies)
-          _ <- validateProspectInformationWithRepublicSystem(prospect).run(dependencies)
-          _ <- validateProspectRating(prospect).run(dependencies)
-          _ <- save(prospect).run(dependencies)
+          prospect <- getProspect(dni).run(dependencies._1)
+          _ <- validateProspectVsRepublicSystem(prospect).run((dependencies._2, dependencies._3))
+          _ <- validateProspectRating(prospect).run(dependencies._4)
+          _ <- save(prospect).run(dependencies._5)
         } yield Done
 
       processing.leftMap(error => {
@@ -28,68 +31,68 @@ trait ProspectProcessingServiceBase {
       })
   }
 
-  private def getProspect(dni: Dni): Reader[ServiceLocator, CustomEitherT[Contact]] = Reader {
-    dependencies: ServiceLocator =>
-      dependencies.prospectRepository.get(dni) flatMap{
-        case Some(person) => EitherT.rightT[Task, Error](person)
-        case None         => EitherT.leftT(Error(APPLICATION, s"The prospect ${dni.number} does not exist in temporary directory"))
+  private def getProspect(dni: Dni): Reader[ProspectRepositoryContract, CustomEitherT[Prospect]] = Reader {
+    prospectRepository: ProspectRepositoryContract =>
+
+      prospectRepository.get(dni) flatMap{
+        case Some(prospect) => EitherT.rightT(prospect)
+        case None           => EitherT.leftT(Error(APPLICATION, s"The prospect ${dni.number} does not exist in temporary directory"))
       }
   }
 
-  private def validateProspectInformationWithRepublicSystem(prospect: Contact): Reader[ServiceLocator, CustomEitherT[Done]] = Reader {
-    dependencies: ServiceLocator =>
+  private def validateProspectVsRepublicSystem(prospect: Prospect): Reader[(RepublicIdentificationServiceContract, RepublicPoliceServiceContract), CustomEitherT[Done]] = Reader {
+    dependencies: (RepublicIdentificationServiceContract, RepublicPoliceServiceContract) =>
 
-      val validationData = validateProspectData(prospect).run(dependencies).value
-      val validationCriminalRecord = validateProspectCriminalRecord(prospect).run(dependencies).value
+      val validationData = validateProspectData(prospect).run(dependencies._1).value
+      val validationCriminalRecord = validateProspectCriminalRecord(prospect).run(dependencies._2).value
 
-      val validationExecution: Task[CustomEither[Done]] =
-        for {
-          validationDataResult <- validationData
-          validationCriminalRecordResult <- validationCriminalRecord
-        } yield
-          (validationDataResult, validationCriminalRecordResult).mapN((_, _) => Done)
+      val execution: Task[CustomEither[List[Done]]] =
+        Task.gatherUnordered( List(validationData, validationCriminalRecord) ).map(_.group)
 
-      EitherT(validationExecution)
+      EitherT(execution)map(_ => Done)
   }
 
-  private def validateProspectData(prospect: Contact): Reader[ServiceLocator, CustomEitherT[Done]] = Reader {
-    dependencies: ServiceLocator =>
+  private def validateProspectData(prospect: Prospect): Reader[RepublicIdentificationServiceContract, CustomEitherT[Done]] = Reader {
+    republicIdentificationService: RepublicIdentificationServiceContract =>
+
       Logging.info(s"Validating personal data for prospect ${prospect.dni.number}...", getClass)
 
-      dependencies.republicIdentificationService
-        .getPerson(prospect.dni).run(dependencies.wsClient)
+      republicIdentificationService
+        .getProspectData(prospect.dni)
         .subflatMap{
-          case Some(person) => dependencies.prospectDataValidationService.validateData(prospect, person)
-          case None         => Left(Error(APPLICATION, s"The prospect ${prospect.dni.number} does not exist in republic identification system"))
+          case Some(prospectData) => prospect.validateEqualityData(prospectData)
+          case None               => Left(Error(APPLICATION, s"The prospect ${prospect.dni.number} does not exist in republic identification system"))
         }
   }
 
-  private def validateProspectCriminalRecord(prospect: Contact): Reader[ServiceLocator, CustomEitherT[Done]] = Reader {
-    dependencies: ServiceLocator =>
+  private def validateProspectCriminalRecord(prospect: Prospect): Reader[RepublicPoliceServiceContract, CustomEitherT[Done]] = Reader {
+    republicPoliceService: RepublicPoliceServiceContract =>
+
       Logging.info(s"Validating criminal record for prospect ${prospect.dni.number}...", getClass)
 
-      dependencies.republicPoliceService
-        .getCriminalRecord(prospect.dni).run(dependencies.wsClient)
-        .subflatMap(possibleCriminalRecord =>
-          dependencies.prospectCriminalRecordValidationService.validateRecord(prospect.dni, possibleCriminalRecord)
-        )
+      republicPoliceService.existsCriminalRecord(prospect.dni)
+        .subflatMap{
+          case true  => Left(Error(BUSINESS, s"Exists criminal record for the prospect ${prospect.dni.number}"))
+          case false => Right(Done)
+        }
   }
 
-  private def validateProspectRating(prospect: Contact): Reader[ServiceLocator, CustomEitherT[Done]] = Reader {
-    dependencies: ServiceLocator =>
+  private def validateProspectRating(prospect: Prospect): Reader[ProspectRatingServiceBase, CustomEitherT[Done]] = Reader {
+    prospectRatingService: ProspectRatingServiceBase =>
+
       Logging.info(s"Validating rating for prospect ${prospect.dni.number}...", getClass)
 
-      val score = dependencies.prospectRatingService.rate(prospect.dni)
-
-      dependencies.prospectScoreValidationService
-        .validateScore(prospect.dni, score).toCustomEitherT
+      val score = prospectRatingService.rate(prospect.dni)
+      prospect.validateScore(score).toCustomEitherT
   }
 
-  private def save(prospect: Contact): Reader[ServiceLocator, CustomEitherT[Done]] = Reader {
-    dependencies: ServiceLocator =>
+  private def save(prospect: Prospect): Reader[ContactRepositoryContract, CustomEitherT[Done]] = Reader {
+    contactRepository: ContactRepositoryContract =>
 
-      dependencies.contactRepository.save(prospect).map( _ => {
-        Logging.info(s"Contact ${prospect.dni.number} saved successfully!!", getClass)
+      val contactToSave = Contact(prospect.firstName, prospect.lastName, prospect.dni)
+
+      contactRepository.save(contactToSave).map( _ => {
+        Logging.info(s"Contact ${contactToSave.dni.number} saved successfully!!", getClass)
         Done
       })
   }

@@ -18,8 +18,6 @@ case class RepublicPoliceService(wsClient: StandaloneAhcWSClient) extends Republ
   private val webResourcePath: String => String = id => s"/republic-police-service/person/$id/criminal-record"
 
   def existsCriminalRecord( dni: Dni ): CustomEitherT[Boolean] = {
-
-      Logging.info(s"Getting criminal record for prospect with id ${dni.number}", getClass)
       stubWebServer(dni.number)
 
       EitherT {

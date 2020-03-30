@@ -1,8 +1,9 @@
 package co.com.addi.contactbook.domain.contracts.wsclients
 
 import co.com.addi.contactbook.domain.aliases.CustomEitherT
-import co.com.addi.contactbook.domain.models.{Contact, Dni}
+import co.com.addi.contactbook.domain.models.{Dni, Prospect}
 
 trait RepublicIdentificationServiceContract {
-  def getPerson(dni: Dni): CustomEitherT[Option[Contact]]
+
+  def getProspectData(dni: Dni): CustomEitherT[Option[Prospect]]
 }

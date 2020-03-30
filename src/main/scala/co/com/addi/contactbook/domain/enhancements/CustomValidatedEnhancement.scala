@@ -13,21 +13,8 @@ object CustomValidatedEnhancement {
     def toCustomEither: CustomEither[A] =
       validated match {
         case Valid(value)    => Right(value)
-        case Invalid(errors) => Left(unifyErrors(errors.toList))
+        case Invalid(errors) => Left(Error.unifyErrors(errors.toList))
       }
-
-    private def unifyErrors(errors: List[models.Error]): models.Error = {
-
-      val typeErrors = errors.map(_.code)
-      val unifiedMessage = errors.map(_.message).mkString(". ")
-
-      (typeErrors.contains(BUSINESS), typeErrors.contains(APPLICATION), typeErrors.contains(TECHNICAL)) match {
-        case (true, _, _) => Error(BUSINESS, unifiedMessage)
-        case (_, true, _) => Error(APPLICATION, unifiedMessage)
-        case (_, _, true) => Error(TECHNICAL, unifiedMessage)
-        case _            => Error(APPLICATION, unifiedMessage)
-      }
-    }
   }
 
 }

@@ -26,8 +26,8 @@ object Main extends App {
   val dependencies = new ServiceLocator()
 
   val tasks: List[Task[CustomEither[Done]]] = ProspectsDataSet.data.values.toList.map(personDto => {
-    val dni = Dni(personDto.id, DniCode(personDto.typeId))
-    dependencies.prospectProcessingService.process(dni).run(dependencies).value
+    val dni = Dni(personDto.id, DniCode(personDto.typeId), "")
+    dependencies.prospectProcessingService.process(dni).run((dependencies.prospectRepository, dependencies.republicIdentificationService, dependencies.republicPoliceService, dependencies.prospectRatingService, dependencies.contactRepository)).value
   })
 
   Task.sequence(tasks).runToFuture
