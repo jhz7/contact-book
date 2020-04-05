@@ -1,33 +1,35 @@
 package co.com.addi.contactbook.infraestructure
 
-import akka.actor.ActorSystem
-import akka.stream.{Materializer, SystemMaterializer}
+import akka.stream.Materializer
 import co.com.addi.contactbook.application.services._
-import co.com.addi.contactbook.domain.contracts.repositories.{ContactRepositoryContract, ProspectRepositoryContract}
-import co.com.addi.contactbook.domain.contracts.wsclients.{RepublicIdentificationServiceContract, RepublicPoliceServiceContract}
-import co.com.addi.contactbook.infraestructure.repositories.{ContactRepository, ProspectRepository}
-import co.com.addi.contactbook.infraestructure.wsclients.{RepublicIdentificationService, RepublicPoliceService}
+import co.com.addi.contactbook.domain.contracts.repositories._
+import co.com.addi.contactbook.domain.contracts.wsclients._
+import co.com.addi.contactbook.infraestructure.repositories._
+import co.com.addi.contactbook.infraestructure.wsclients._
 import play.api.libs.ws.ahc.StandaloneAhcWSClient
 
-class ServiceLocator(implicit var system: ActorSystem) {
+class ServiceLocator(implicit var m: Materializer) {
 
-  private implicit var materializer: Materializer = SystemMaterializer(system).materializer
   val wsClient = StandaloneAhcWSClient()
-
-  val republicIdentificationService: RepublicIdentificationServiceContract = RepublicIdentificationService(wsClient)
-
-  val republicPoliceService: RepublicPoliceServiceContract = RepublicPoliceService(wsClient)
 
   val prospectRepository: ProspectRepositoryContract = ProspectRepository
 
   val contactRepository: ContactRepositoryContract = ContactRepository
 
-  val prospectRatingService: ProspectRatingServiceBase = ProspectRatingService
+  val prospectScoringService: ProspectScoringValidationService = ProspectScoringValidationService
 
-  val validationProspectVsRepublicSystemService: ValidationProspectVsRepublicSystemService =
-    ValidationProspectVsRepublicSystemService(republicIdentificationService, republicPoliceService)
+  val republicIdentificationService: RepublicIdentificationServiceContract = RepublicIdentificationService(wsClient)
+
+  val republicPoliceService: RepublicPoliceServiceContract = RepublicPoliceService(wsClient)
+
+  val contactPersistenceService: ContactPersistenceService = ContactPersistenceService(contactRepository)
+
+  val prospectPersistenceService: ProspectPersistenceService = ProspectPersistenceService(prospectRepository)
+
+  val prospectDataValidationService: ProspectDataValidationService =
+    ProspectDataValidationService(republicIdentificationService, republicPoliceService)
 
   val prospectProcessingService: ProspectProcessingService =
-    ProspectProcessingService(prospectRepository, prospectRatingService, contactRepository, validationProspectVsRepublicSystemService)
+    ProspectProcessingService(prospectScoringService, prospectDataValidationService, prospectPersistenceService, contactPersistenceService)
 
 }

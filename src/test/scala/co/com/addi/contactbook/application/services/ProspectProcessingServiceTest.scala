@@ -132,7 +132,7 @@ class ProspectProcessingServiceTest extends TestKit {
           doReturn(Right(Done))
             .when(dependencies.prospectCriminalRecordValidationService).validateRecord(any[Dni](), any())
           doReturn(score)
-            .when(dependencies.prospectRatingService).rate(any[Dni]())
+            .when(dependencies.prospectScoringService).rate(any[Dni]())
           doReturn(Left(ErrorDto(APPLICATION, "Fake error validating score")))
             .when(dependencies.prospectScoreValidationService).validateScore(any[Dni](), anyInt)
 
@@ -144,7 +144,7 @@ class ProspectProcessingServiceTest extends TestKit {
           verify(dependencies.prospectDataValidationService, times(1)).validateData(any[Person](), any[Person]())
           verify(dependencies.republicPoliceService, times(1)).getCriminalRecord(any[Dni]())
           verify(dependencies.prospectCriminalRecordValidationService, times(1)).validateRecord(any[Dni](), any())
-          verify(dependencies.prospectRatingService, times(1)).rate(any[Dni]())
+          verify(dependencies.prospectScoringService, times(1)).rate(any[Dni]())
           verify(dependencies.prospectScoreValidationService, times(1)).validateScore(any[Dni](), anyInt)
         }
       }
@@ -169,7 +169,7 @@ class ProspectProcessingServiceTest extends TestKit {
           doReturn(Right(Done))
             .when(dependencies.prospectCriminalRecordValidationService).validateRecord(any[Dni](), any())
           doReturn(score)
-            .when(dependencies.prospectRatingService).rate(any[Dni]())
+            .when(dependencies.prospectScoringService).rate(any[Dni]())
           doReturn(Right(Done))
             .when(dependencies.prospectScoreValidationService).validateScore(any[Dni](), anyInt)
           doReturn(EitherT.rightT[Task, ErrorDto](Done))
@@ -183,7 +183,7 @@ class ProspectProcessingServiceTest extends TestKit {
           verify(dependencies.prospectDataValidationService, times(1)).validateData(any[Person](), any[Person]())
           verify(dependencies.republicPoliceService, times(1)).getCriminalRecord(any[Dni]())
           verify(dependencies.prospectCriminalRecordValidationService, times(1)).validateRecord(any[Dni](), any())
-          verify(dependencies.prospectRatingService, times(1)).rate(any[Dni]())
+          verify(dependencies.prospectScoringService, times(1)).rate(any[Dni]())
           verify(dependencies.prospectScoreValidationService, times(1)).validateScore(any[Dni](), anyInt)
           verify(dependencies.contactRepository, times(1)).save(any[Person]())
         }

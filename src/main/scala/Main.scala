@@ -1,6 +1,5 @@
-import akka.Done
 import akka.actor.ActorSystem
-import co.com.addi.contactbook.domain.aliases.CustomEither
+import akka.stream.{Materializer, SystemMaterializer}
 import co.com.addi.contactbook.domain.models.Dni
 import co.com.addi.contactbook.domain.types.DniCode
 import co.com.addi.contactbook.infraestructure.ServiceLocator
@@ -9,26 +8,34 @@ import co.com.addi.contactbook.infraestructure.webserver.WebServerStub
 import monix.eval.Task
 import monix.execution.Scheduler.Implicits.global
 
-import scala.concurrent.Await
+import scala.concurrent.{Await, Future}
 import scala.concurrent.duration.Duration
 
 object Main extends App {
 
   WebServerStub.startStubServer()
-  implicit val system: ActorSystem = ActorSystem()
+
+  val system: ActorSystem = ActorSystem()
+  implicit var m: Materializer = SystemMaterializer(system).materializer
+
   val dependencies = new ServiceLocator()
 
   val tasks =
     ProspectsDataSet.data.values.toList.map(personDto => {
       val dni = Dni(personDto.id, DniCode(personDto.typeId), "")
       dependencies.prospectProcessingService
-        .validateProspect(dni).fold( _ => Nil, _ => Nil )
+        .becomeContact(dni).fold(_ => Nil, _ => Nil )
     })
 
-  Await.result( Task.gatherUnordered(tasks).runToFuture, Duration.Inf )
+  Await.result(
+    Task.sequence(tasks).runToFuture.flatMap( _ => finishProcess()), Duration.Inf )
 
-  WebServerStub.stopStubServer()
-  println("Finished!!!")
+//  System.runFinalization()
+//  System.exit(1)
 
-  System.runFinalization()
+  def finishProcess() = {
+    WebServerStub.stopStubServer()
+    m.shutdown()
+    system.terminate()
+  }
 }
