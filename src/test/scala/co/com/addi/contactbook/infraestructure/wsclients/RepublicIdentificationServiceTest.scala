@@ -79,7 +79,7 @@ class RepublicIdentificationServiceTest extends TestKit {
           val result = awaitResult(
             RepublicIdentificationService(wsClient).getProspectData(dni).value.runToFuture)
 
-          result mustBe Left(Error(APPLICATION, "The json value do not have an expected format!"))
+          result mustBe Left(Error(APPLICATION, "The json value do not have the expected format!"))
         }
       }
 

@@ -52,8 +52,8 @@ class ProspectTest extends TestKit{
         }
       }
 
-      "The data is valid" must {
-        "Indicate it with a success response" in {
+      "The data is NOT valid" must {
+        "Indicate it with an error response" in {
 
           val firstName1 = "Jhon"
           val firstName2 = "Edwin"
