@@ -19,8 +19,8 @@ trait WebClientHelper {
 
   private def deserialize[T](value: String)(implicit reads: Reads[T]): CustomEither[T] = {
     Json.parse(value).validate[T].asEither match {
-      case Right(pojo) => Right(pojo)
-      case Left(_)     => Left(Error(APPLICATION, "The json value do not have an expected format..."))
+      case Right(obj) => Right(obj)
+      case Left(_)    => Left(Error(APPLICATION, "The json value do not have the expected format!"))
     }
   }
 

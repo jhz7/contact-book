@@ -8,34 +8,35 @@ import co.com.addi.contactbook.infraestructure.webserver.WebServerStub
 import monix.eval.Task
 import monix.execution.Scheduler.Implicits.global
 
-import scala.concurrent.{Await, Future}
+import scala.concurrent.Await
 import scala.concurrent.duration.Duration
 
 object Main extends App {
 
-  WebServerStub.startStubServer()
-
   val system: ActorSystem = ActorSystem()
   implicit var m: Materializer = SystemMaterializer(system).materializer
+  WebServerStub.startStubServer()
 
   val dependencies = new ServiceLocator()
 
-  val tasks =
-    ProspectsDataSet.data.values.toList.map(personDto => {
-      val dni = Dni(personDto.id, DniCode(personDto.typeId), "")
-      dependencies.prospectProcessingService
-        .becomeContact(dni).fold(_ => Nil, _ => Nil )
-    })
+  def getProcesses =
+    ProspectsDataSet.data.values.toList.map(personDto =>
+      dependencies.prospectProcessingService.becomeContact(Dni(personDto.id, DniCode(personDto.typeId), personDto.expeditionIdPlace)).value
+    )
 
-  Await.result(
-    Task.sequence(tasks).runToFuture.flatMap( _ => finishProcess()), Duration.Inf )
-
-//  System.runFinalization()
-//  System.exit(1)
-
-  def finishProcess() = {
+  def finishProcess = {
     WebServerStub.stopStubServer()
     m.shutdown()
     system.terminate()
   }
+
+  def execute = {
+    Await.result(
+      Task.sequence( getProcesses ).runToFuture
+        .flatMap( _ => finishProcess)
+      , Duration.Inf
+    )
+  }
+
+  execute
 }
