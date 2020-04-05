@@ -14,7 +14,6 @@ case object Error {
       case (true, _, _) => Error(BUSINESS, unifiedMessage)
       case (_, true, _) => Error(APPLICATION, unifiedMessage)
       case (_, _, true) => Error(TECHNICAL, unifiedMessage)
-      case _            => Error(APPLICATION, unifiedMessage)
     }
   }
 }

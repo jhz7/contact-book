@@ -1,8 +1,15 @@
 package co.com.addi.contactbook.infraestructure.wsclients
 
 import co.com.addi.contactbook.TestKit
+import co.com.addi.contactbook.domain.models.Error
+import co.com.addi.contactbook.domain.types.{APPLICATION, TECHNICAL}
 import co.com.addi.contactbook.factories.{CriminalRecordFactory, PersonFactory}
-import co.com.addi.contactbook.tools.FutureTool
+import co.com.addi.contactbook.infraestructure.webserver.WebServerStub
+import co.com.addi.contactbook.tools.FutureTool.awaitResult
+import play.api.libs.json.Json
+import play.api.libs.ws.ahc.{StandaloneAhcWSClient, StandaloneAhcWSRequest, StandaloneAhcWSResponse}
+
+import scala.concurrent.Future
 
 class RepublicPoliceServiceTest extends TestKit {
 
@@ -13,7 +20,7 @@ class RepublicPoliceServiceTest extends TestKit {
     "Get the criminal record" when {
 
       "The criminal record exists" must {
-        "Return CriminalRecord instance" in {
+        "Indicate that as result" in {
 
           val dni = PersonFactory.createDni
           val criminalRecordDto = CriminalRecordFactory.getInstance
@@ -27,14 +34,15 @@ class RepublicPoliceServiceTest extends TestKit {
           doReturn(200).when(response).status
           doReturn(Json.toJson(criminalRecordDto).toString()).when(response).body
 
-          val result = FutureTool.awaitResult(RepublicPoliceService.getCriminalRecord(dni).run(wsClient).value.runToFuture)
+          val result = awaitResult(
+            RepublicPoliceService(wsClient).existsCriminalRecord(dni).value.runToFuture)
 
-          result.map( _.exists(_.isInstanceOf[CriminalRecordDto]) mustBe true )
+          result.map( v => v mustBe true )
         }
       }
 
       "The criminal record does not exist" must {
-        "Not return any value" in {
+        "Indicate that as result" in {
 
           val dni = PersonFactory.createDni
           val wsClient = mock[StandaloneAhcWSClient]
@@ -46,9 +54,10 @@ class RepublicPoliceServiceTest extends TestKit {
           doReturn(futureResponse).when(request).get()
           doReturn(204).when(response).status
 
-          val result = FutureTool.awaitResult(RepublicPoliceService.getCriminalRecord(dni).run(wsClient).value.runToFuture)
+          val result = awaitResult(
+            RepublicPoliceService(wsClient).existsCriminalRecord(dni).value.runToFuture)
 
-          result mustBe Right(None)
+          result.map( v => v mustBe false )
         }
       }
 
@@ -67,9 +76,10 @@ class RepublicPoliceServiceTest extends TestKit {
           doReturn(200).when(response).status
           doReturn(badJsonObj).when(response).body
 
-          val result = FutureTool.awaitResult(RepublicPoliceService.getCriminalRecord(dni).run(wsClient).value.runToFuture)
+          val result = awaitResult(
+            RepublicPoliceService(wsClient).existsCriminalRecord(dni).value.runToFuture)
 
-          result mustBe Left(ErrorDto(APPLICATION, "The json value do not have an expected format..."))
+          result mustBe Left(Error(APPLICATION, "The json value do not have the expected format!"))
         }
       }
 
@@ -88,9 +98,10 @@ class RepublicPoliceServiceTest extends TestKit {
           doReturn(500).when(response).status
           doReturn(errorMessage).when(response).body
 
-          val result = FutureTool.awaitResult(RepublicPoliceService.getCriminalRecord(dni).run(wsClient).value.runToFuture)
+          val result = awaitResult(
+            RepublicPoliceService(wsClient).existsCriminalRecord(dni).value.runToFuture)
 
-          result mustBe Left(ErrorDto(APPLICATION, errorMessage))
+          result mustBe Left(Error(APPLICATION, errorMessage))
         }
       }
 
@@ -105,9 +116,10 @@ class RepublicPoliceServiceTest extends TestKit {
           doReturn(request).when(wsClient).url(anyString)
           doReturn(futureResponse).when(request).get()
 
-          val result = FutureTool.awaitResult(RepublicPoliceService.getCriminalRecord(dni).run(wsClient).value.runToFuture)
+          val result = awaitResult(
+            RepublicPoliceService(wsClient).existsCriminalRecord(dni).value.runToFuture)
 
-          result mustBe Left(ErrorDto(TECHNICAL, s"Has occurred an error getting criminal record for person with id ${dni.number}"))
+          result mustBe Left(Error(TECHNICAL, s"Has occurred an error getting criminal record for person with id ${dni.number}"))
         }
       }
 

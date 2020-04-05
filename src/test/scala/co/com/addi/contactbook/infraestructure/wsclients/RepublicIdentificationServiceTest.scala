@@ -1,8 +1,15 @@
 package co.com.addi.contactbook.infraestructure.wsclients
 
 import co.com.addi.contactbook.TestKit
+import co.com.addi.contactbook.domain.models.{Error, Prospect}
+import co.com.addi.contactbook.domain.types.{APPLICATION, TECHNICAL}
 import co.com.addi.contactbook.factories.PersonFactory
-import co.com.addi.contactbook.tools.FutureTool
+import co.com.addi.contactbook.infraestructure.webserver.WebServerStub
+import co.com.addi.contactbook.tools.FutureTool.awaitResult
+import play.api.libs.json.Json
+import play.api.libs.ws.ahc.{StandaloneAhcWSClient, StandaloneAhcWSRequest, StandaloneAhcWSResponse}
+
+import scala.concurrent.Future
 
 class RepublicIdentificationServiceTest extends TestKit {
 
@@ -12,8 +19,8 @@ class RepublicIdentificationServiceTest extends TestKit {
 
     "Get person" when {
 
-      "The person exists" must {
-        "Return Person instance" in {
+      "The prospect exists" must {
+        "Return prospect instance" in {
 
           val dni = PersonFactory.createDni
           val personDto = PersonFactory.createPersonDto
@@ -27,13 +34,14 @@ class RepublicIdentificationServiceTest extends TestKit {
           doReturn(200).when(response).status
           doReturn(Json.toJson(personDto).toString()).when(response).body
 
-          val result = FutureTool.awaitResult(RepublicIdentificationService.getPerson(dni).run(wsClient).value.runToFuture)
+          val result = awaitResult(
+            RepublicIdentificationService(wsClient).getProspectData(dni).value.runToFuture)
 
-          result.map( _.exists(_.isInstanceOf[Person]) mustBe true )
+          result.map( _.exists(_.isInstanceOf[Prospect]) mustBe true )
         }
       }
 
-      "The person does not exist" must {
+      "The prospect does not exist" must {
         "Not return any value" in {
 
           val dni = PersonFactory.createDni
@@ -46,7 +54,8 @@ class RepublicIdentificationServiceTest extends TestKit {
           doReturn(futureResponse).when(request).get()
           doReturn(204).when(response).status
 
-          val result = FutureTool.awaitResult(RepublicIdentificationService.getPerson(dni).run(wsClient).value.runToFuture)
+          val result = awaitResult(
+            RepublicIdentificationService(wsClient).getProspectData(dni).value.runToFuture)
 
           result mustBe Right(None)
         }
@@ -67,9 +76,10 @@ class RepublicIdentificationServiceTest extends TestKit {
           doReturn(200).when(response).status
           doReturn(badJsonObj).when(response).body
 
-          val result = FutureTool.awaitResult(RepublicIdentificationService.getPerson(dni).run(wsClient).value.runToFuture)
+          val result = awaitResult(
+            RepublicIdentificationService(wsClient).getProspectData(dni).value.runToFuture)
 
-          result mustBe Left(ErrorDto(APPLICATION, "The json value do not have an expected format..."))
+          result mustBe Left(Error(APPLICATION, "The json value do not have an expected format!"))
         }
       }
 
@@ -88,9 +98,10 @@ class RepublicIdentificationServiceTest extends TestKit {
           doReturn(500).when(response).status
           doReturn(errorMessage).when(response).body
 
-          val result = FutureTool.awaitResult(RepublicIdentificationService.getPerson(dni).run(wsClient).value.runToFuture)
+          val result = awaitResult(
+            RepublicIdentificationService(wsClient).getProspectData(dni).value.runToFuture)
 
-          result mustBe Left(ErrorDto(APPLICATION, errorMessage))
+          result mustBe Left(Error(APPLICATION, errorMessage))
         }
       }
 
@@ -105,9 +116,10 @@ class RepublicIdentificationServiceTest extends TestKit {
           doReturn(request).when(wsClient).url(anyString)
           doReturn(futureResponse).when(request).get()
 
-          val result = FutureTool.awaitResult(RepublicIdentificationService.getPerson(dni).run(wsClient).value.runToFuture)
+          val result = awaitResult(
+            RepublicIdentificationService(wsClient).getProspectData(dni).value.runToFuture)
 
-          result mustBe Left(ErrorDto(TECHNICAL, s"Has occurred an error getting data for person with id ${dni.number}"))
+          result mustBe Left(Error(TECHNICAL, s"Has occurred an error getting data for person with id ${dni.number}"))
         }
       }
 

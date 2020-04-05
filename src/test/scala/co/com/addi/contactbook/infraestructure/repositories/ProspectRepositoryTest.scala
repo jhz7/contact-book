@@ -1,8 +1,9 @@
 package co.com.addi.contactbook.infraestructure.repositories
 
 import co.com.addi.contactbook.TestKit
+import co.com.addi.contactbook.domain.models.Prospect
 import co.com.addi.contactbook.factories.PersonFactory
-import co.com.addi.contactbook.tools.FutureTool
+import co.com.addi.contactbook.tools.FutureTool.awaitResult
 import com.softwaremill.quicklens.ModifyPimp
 
 class ProspectRepositoryTest extends TestKit {
@@ -16,10 +17,10 @@ class ProspectRepositoryTest extends TestKit {
 
           val dni = PersonFactory.createDni.modify(_.number).setTo("1")
 
-          val result = FutureTool.awaitResult(ProspectRepository.get(dni).value.runToFuture)
+          val result = awaitResult(ProspectRepository.get(dni).value.runToFuture)
 
           result match {
-            case Right(prospect) => prospect.map(_.isInstanceOf[Person])
+            case Right(prospect) => prospect.map(_.isInstanceOf[Prospect])
             case Left(_) => fail("Should return a prospect")
           }
         }
@@ -30,7 +31,7 @@ class ProspectRepositoryTest extends TestKit {
 
           val dni = PersonFactory.createDni.modify(_.number).setTo("50")
 
-          val result = FutureTool.awaitResult(ProspectRepository.get(dni).value.runToFuture)
+          val result = awaitResult(ProspectRepository.get(dni).value.runToFuture)
 
           result mustBe Right(None)
         }
