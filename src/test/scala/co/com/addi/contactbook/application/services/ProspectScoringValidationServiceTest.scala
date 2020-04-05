@@ -1,20 +1,40 @@
 package co.com.addi.contactbook.application.services
 
+import akka.Done
 import co.com.addi.contactbook.TestKit
-import co.com.addi.contactbook.factories.PersonFactory
+import co.com.addi.contactbook.domain.models.{Error, Prospect}
+import co.com.addi.contactbook.domain.types.APPLICATION
 
-class ProspectScoringValidationServiceTest extends TestKit {
+class ProspectScoringValidationServiceTest extends TestKit{
 
-  "ProspectRatingService" should {
+  "ProspectScoringValidationService" should {
 
-    "Rating randomly a prospect" must {
-      "Return the generated score" in {
-        val dni = PersonFactory.createDni
+    "Start prospect score validation" when {
 
-        val result = ProspectScoringValidationService.rate(dni)
+      "The score is valid" must {
+        "Indicate it with a success response" in {
+          val expectedResult = Right(Done)
 
-        assert(result <= 100)
-        assert(result > 0)
+          val prospect = mock[Prospect]
+          doReturn(expectedResult).when(prospect).validateScore(anyInt)
+
+          val result = ProspectScoringValidationService.validate(prospect)
+
+          result mustBe expectedResult
+        }
+      }
+
+      "The score is NOT valid" must {
+        "Indicate it with an error response" in {
+          val expectedResult = Left(Error(APPLICATION, "Fake error..."))
+
+          val prospect = mock[Prospect]
+          doReturn(expectedResult).when(prospect).validateScore(anyInt)
+
+          val result = ProspectScoringValidationService.validate(prospect)
+
+          result mustBe expectedResult
+        }
       }
     }
   }

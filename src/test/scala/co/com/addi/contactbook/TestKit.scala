@@ -2,7 +2,7 @@ package co.com.addi.contactbook
 
 import akka.actor.ActorSystem
 import akka.stream.{Materializer, SystemMaterializer}
-import co.com.addi.contactbook.application.FalseServiceLocator
+import co.com.addi.contactbook.infraestructure.FalseServiceLocator
 import monix.execution.Scheduler
 import monix.execution.Scheduler.Implicits.global
 import org.scalatest.BeforeAndAfterEach
@@ -16,6 +16,6 @@ trait TestKit extends AnyWordSpec with Matchers with Mockito  with BeforeAndAfte
   implicit val m: Materializer = SystemMaterializer(system).materializer
   implicit val scheduler: Scheduler = global
 
-  def getFalseDependencies: FalseServiceLocator = new FalseServiceLocator()
+  def getFalseServiceLocator: FalseServiceLocator = new FalseServiceLocator()
 
 }

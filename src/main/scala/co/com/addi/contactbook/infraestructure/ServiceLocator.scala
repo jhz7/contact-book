@@ -16,7 +16,7 @@ class ServiceLocator(implicit var m: Materializer) {
 
   val contactRepository: ContactRepositoryContract = ContactRepository
 
-  val prospectScoringService: ProspectScoringValidationService = ProspectScoringValidationService
+  val prospectScoringValidationService: ProspectScoringValidationService = ProspectScoringValidationService
 
   val republicIdentificationService: RepublicIdentificationServiceContract = RepublicIdentificationService(wsClient)
 
@@ -30,6 +30,6 @@ class ServiceLocator(implicit var m: Materializer) {
     ProspectDataValidationService(republicIdentificationService, republicPoliceService)
 
   val prospectProcessingService: ProspectProcessingService =
-    ProspectProcessingService(prospectScoringService, prospectDataValidationService, prospectPersistenceService, contactPersistenceService)
+    ProspectProcessingService(prospectScoringValidationService, prospectDataValidationService, prospectPersistenceService, contactPersistenceService)
 
 }

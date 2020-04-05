@@ -1,194 +1,73 @@
 package co.com.addi.contactbook.application.services
 
+import akka.Done
 import cats.data.EitherT
 import co.com.addi.contactbook.TestKit
-import co.com.addi.contactbook.domain.models.Dni
+import co.com.addi.contactbook.domain.models.{Contact, Dni, Error, Prospect}
+import co.com.addi.contactbook.domain.types.APPLICATION
 import co.com.addi.contactbook.factories.PersonFactory
-import co.com.addi.contactbook.tools.FutureTool
-import com.softwaremill.quicklens.ModifyPimp
+import co.com.addi.contactbook.tools.FutureTool.awaitResult
 import monix.eval.Task
-import org.mockito.Mockito.{times, verify}
+import org.mockito.Mockito.{never, verify}
 
-class ProspectProcessingServiceTest extends TestKit {
+class ProspectProcessingServiceTest extends TestKit{
 
   "ProspectProcessingService" should {
 
-    "Process a prospect to determine if is a valid contact" when {
+    "The contact is saved successfully" must {
+      "Indicate it with a success response" in {
 
-      "The prospect does not exist in temporary directory" must {
-        "Return an error" in {
+        val serviceLocator = getFalseServiceLocator
 
-          val dni = PersonFactory.createDni.modify(_.number).setTo("X")
+        val dni = PersonFactory.createDni
+        val prospectProcessingService = ProspectProcessingService(
+          serviceLocator.prospectScoringValidationService,
+          serviceLocator.prospectDataValidationService,
+          serviceLocator.prospectPersistenceService,
+          serviceLocator.contactPersistenceService
+        )
 
-          val dependencies = getFalseDependencies
+        doReturn(EitherT.rightT[Task, Error](PersonFactory.createProspect)).when(serviceLocator.prospectPersistenceService).get(any[Dni]())
+        doReturn(EitherT.rightT[Task, Error](Done)).when(serviceLocator.prospectDataValidationService).validate(any[Prospect]())
+        doReturn(EitherT.rightT[Task, Error](Done)).when(serviceLocator.prospectScoringValidationService).validate(any[Prospect]())
+        doReturn(EitherT.rightT[Task, Error](Done)).when(serviceLocator.contactPersistenceService).save(any[Contact]())
 
-          doReturn(EitherT.rightT[Task, Error](None)).when(dependencies.prospectRepository).get(any[Dni]())
+        val result = awaitResult(
+          prospectProcessingService.becomeContact(dni).value.runToFuture)
 
-          val result = FutureTool.awaitResult(ProspectProcessingService.process(dni).run(dependencies).value.runToFuture)
-
-          result mustBe Left(ErrorDto(APPLICATION, s"The prospect ${dni.number} does not exist in temporary directory"))
-          verify(dependencies.prospectRepository, times(1)).get(any[Dni]())
-        }
+        result mustBe Right(Done)
+        verify(serviceLocator.prospectPersistenceService).get(any[Dni]())
+        verify(serviceLocator.prospectDataValidationService).validate(any[Prospect]())
+        verify(serviceLocator.prospectScoringValidationService).validate(any[Prospect]())
+        verify(serviceLocator.contactPersistenceService).save(any[Contact]())
       }
+    }
 
-      "The republic identification service does not return any person data" must {
-        "Return an error" in {
+    "Occurs an error getting prospect" must {
+      "Indicate it with an error response" in {
 
-          val dni = PersonFactory.createDni.modify(_.number).setTo("X")
-          val prospect = PersonFactory.createContact.modify(_.dni).setTo(dni)
+        val serviceLocator = getFalseServiceLocator
 
-          val dependencies = getFalseDependencies
+        val dni = PersonFactory.createDni
+        val prospectProcessingService = ProspectProcessingService(
+          serviceLocator.prospectScoringValidationService,
+          serviceLocator.prospectDataValidationService,
+          serviceLocator.prospectPersistenceService,
+          serviceLocator.contactPersistenceService
+        )
 
-          doReturn(EitherT.rightT[Task, ErrorDto](Some(prospect)))
-            .when(dependencies.prospectRepository).get(any[Dni]())
-          doReturn(Reader{_: StandaloneAhcWSClient => EitherT.rightT[Task, ErrorDto](None)})
-            .when(dependencies.republicIdentificationService).getPerson(any[Dni]())
-          doReturn(Reader{_: StandaloneAhcWSClient => EitherT.rightT[Task, ErrorDto](None)})
-            .when(dependencies.republicPoliceService).getCriminalRecord(any[Dni]())
+        doReturn(EitherT.leftT[Task, Done](Error(APPLICATION, "Fake error")))
+          .when(serviceLocator.prospectPersistenceService).get(any[Dni]())
 
-          val result = FutureTool.awaitResult(ProspectProcessingService.process(dni).run(dependencies).value.runToFuture)
+        val result = awaitResult(
+          prospectProcessingService.becomeContact(dni).value.runToFuture)
 
-          result mustBe Left(ErrorDto(APPLICATION, s"The prospect ${dni.number} does not exist in republic identification system"))
-          verify(dependencies.prospectRepository, times(1)).get(any[Dni]())
-          verify(dependencies.republicIdentificationService, times(1)).getPerson(any[Dni]())
-          verify(dependencies.republicPoliceService, times(1)).getCriminalRecord(any[Dni]())
-        }
+        result mustBe Left(Error(APPLICATION, "Fake error"))
+        verify(serviceLocator.prospectPersistenceService).get(any[Dni]())
+        verify(serviceLocator.prospectDataValidationService, never()).validate(any[Prospect]())
+        verify(serviceLocator.prospectScoringValidationService, never()).validate(any[Prospect]())
+        verify(serviceLocator.contactPersistenceService, never()).save(any[Contact]())
       }
-
-      "The prospect data is not valid against republic identification data" must {
-        "Return an error" in {
-
-          val dni = PersonFactory.createDni.modify(_.number).setTo("X")
-          val prospect = PersonFactory.createContact.modify(_.dni).setTo(dni)
-
-          val dependencies = getFalseDependencies
-
-          doReturn(EitherT.rightT[Task, ErrorDto](Some(prospect)))
-            .when(dependencies.prospectRepository).get(any[Dni]())
-          doReturn(Reader{_: StandaloneAhcWSClient => EitherT.rightT[Task, ErrorDto](Some(prospect))})
-            .when(dependencies.republicIdentificationService).getPerson(any[Dni]())
-          doReturn(Reader{_: StandaloneAhcWSClient => EitherT.rightT[Task, ErrorDto](None)})
-            .when(dependencies.republicPoliceService).getCriminalRecord(any[Dni]())
-          doReturn(Left(ErrorDto(APPLICATION, "Fake error validating data")))
-            .when(dependencies.prospectDataValidationService).validateData(any[Person](), any[Person]())
-
-          val result = FutureTool.awaitResult(ProspectProcessingService.process(dni).run(dependencies).value.runToFuture)
-
-          result mustBe Left(ErrorDto(APPLICATION, "Fake error validating data"))
-          verify(dependencies.prospectRepository, times(1)).get(any[Dni]())
-          verify(dependencies.republicIdentificationService, times(1)).getPerson(any[Dni]())
-          verify(dependencies.prospectDataValidationService, times(1)).validateData(any[Person](), any[Person]())
-          verify(dependencies.republicPoliceService, times(1)).getCriminalRecord(any[Dni]())
-        }
-      }
-
-      "The criminal record is not valid" must {
-        "Return an error" in {
-
-          val dni = PersonFactory.createDni.modify(_.number).setTo("X")
-          val prospect = PersonFactory.createContact.modify(_.dni).setTo(dni)
-
-          val dependencies = getFalseDependencies
-
-          doReturn(EitherT.rightT[Task, ErrorDto](Some(prospect)))
-            .when(dependencies.prospectRepository).get(any[Dni]())
-          doReturn(Reader{_: StandaloneAhcWSClient => EitherT.rightT[Task, ErrorDto](Some(prospect))})
-            .when(dependencies.republicIdentificationService).getPerson(any[Dni]())
-          doReturn(Reader{_: StandaloneAhcWSClient => EitherT.rightT[Task, ErrorDto](None)})
-            .when(dependencies.republicPoliceService).getCriminalRecord(any[Dni]())
-          doReturn(Right(Done))
-            .when(dependencies.prospectDataValidationService).validateData(any[Person](), any[Person]())
-          doReturn(Left(ErrorDto(APPLICATION, "Fake error validating criminal record")))
-            .when(dependencies.prospectCriminalRecordValidationService).validateRecord(any[Dni](), any())
-
-          val result = FutureTool.awaitResult(ProspectProcessingService.process(dni).run(dependencies).value.runToFuture)
-
-          result mustBe Left(ErrorDto(APPLICATION, "Fake error validating criminal record"))
-          verify(dependencies.prospectRepository, times(1)).get(any[Dni]())
-          verify(dependencies.republicIdentificationService, times(1)).getPerson(any[Dni]())
-          verify(dependencies.prospectDataValidationService, times(1)).validateData(any[Person](), any[Person]())
-          verify(dependencies.republicPoliceService, times(1)).getCriminalRecord(any[Dni]())
-          verify(dependencies.prospectCriminalRecordValidationService, times(1)).validateRecord(any[Dni](), any())
-        }
-      }
-
-      "The prospect score is below minimum allowed" must {
-        "Return an error" in {
-
-          val dni = PersonFactory.createDni.modify(_.number).setTo("X")
-          val prospect = PersonFactory.createContact.modify(_.dni).setTo(dni)
-          val score = 20
-
-          val dependencies = getFalseDependencies
-
-          doReturn(EitherT.rightT[Task, ErrorDto](Some(prospect)))
-            .when(dependencies.prospectRepository).get(any[Dni]())
-          doReturn(Reader{_: StandaloneAhcWSClient => EitherT.rightT[Task, ErrorDto](Some(prospect))})
-            .when(dependencies.republicIdentificationService).getPerson(any[Dni]())
-          doReturn(Reader{_: StandaloneAhcWSClient => EitherT.rightT[Task, ErrorDto](None)})
-            .when(dependencies.republicPoliceService).getCriminalRecord(any[Dni]())
-          doReturn(Right(Done))
-            .when(dependencies.prospectDataValidationService).validateData(any[Person](), any[Person]())
-          doReturn(Right(Done))
-            .when(dependencies.prospectCriminalRecordValidationService).validateRecord(any[Dni](), any())
-          doReturn(score)
-            .when(dependencies.prospectScoringService).rate(any[Dni]())
-          doReturn(Left(ErrorDto(APPLICATION, "Fake error validating score")))
-            .when(dependencies.prospectScoreValidationService).validateScore(any[Dni](), anyInt)
-
-          val result = FutureTool.awaitResult(ProspectProcessingService.process(dni).run(dependencies).value.runToFuture)
-
-          result mustBe Left(ErrorDto(APPLICATION, "Fake error validating score"))
-          verify(dependencies.prospectRepository, times(1)).get(any[Dni]())
-          verify(dependencies.republicIdentificationService, times(1)).getPerson(any[Dni]())
-          verify(dependencies.prospectDataValidationService, times(1)).validateData(any[Person](), any[Person]())
-          verify(dependencies.republicPoliceService, times(1)).getCriminalRecord(any[Dni]())
-          verify(dependencies.prospectCriminalRecordValidationService, times(1)).validateRecord(any[Dni](), any())
-          verify(dependencies.prospectScoringService, times(1)).rate(any[Dni]())
-          verify(dependencies.prospectScoreValidationService, times(1)).validateScore(any[Dni](), anyInt)
-        }
-      }
-
-      "The contact is saved successfully" must {
-        "Return a success response" in {
-
-          val dni = PersonFactory.createDni.modify(_.number).setTo("X")
-          val prospect = PersonFactory.createContact.modify(_.dni).setTo(dni)
-          val score = 20
-
-          val dependencies = getFalseDependencies
-
-          doReturn(EitherT.rightT[Task, ErrorDto](Some(prospect)))
-            .when(dependencies.prospectRepository).get(any[Dni]())
-          doReturn(Reader{_: StandaloneAhcWSClient => EitherT.rightT[Task, ErrorDto](Some(prospect))})
-            .when(dependencies.republicIdentificationService).getPerson(any[Dni]())
-          doReturn(Reader{_: StandaloneAhcWSClient => EitherT.rightT[Task, ErrorDto](None)})
-            .when(dependencies.republicPoliceService).getCriminalRecord(any[Dni]())
-          doReturn(Right(Done))
-            .when(dependencies.prospectDataValidationService).validateData(any[Person](), any[Person]())
-          doReturn(Right(Done))
-            .when(dependencies.prospectCriminalRecordValidationService).validateRecord(any[Dni](), any())
-          doReturn(score)
-            .when(dependencies.prospectScoringService).rate(any[Dni]())
-          doReturn(Right(Done))
-            .when(dependencies.prospectScoreValidationService).validateScore(any[Dni](), anyInt)
-          doReturn(EitherT.rightT[Task, ErrorDto](Done))
-            .when(dependencies.contactRepository).save(any[Person]())
-
-          val result = FutureTool.awaitResult(ProspectProcessingService.process(dni).run(dependencies).value.runToFuture)
-
-          result mustBe Right(Done)
-          verify(dependencies.prospectRepository, times(1)).get(any[Dni]())
-          verify(dependencies.republicIdentificationService, times(1)).getPerson(any[Dni]())
-          verify(dependencies.prospectDataValidationService, times(1)).validateData(any[Person](), any[Person]())
-          verify(dependencies.republicPoliceService, times(1)).getCriminalRecord(any[Dni]())
-          verify(dependencies.prospectCriminalRecordValidationService, times(1)).validateRecord(any[Dni](), any())
-          verify(dependencies.prospectScoringService, times(1)).rate(any[Dni]())
-          verify(dependencies.prospectScoreValidationService, times(1)).validateScore(any[Dni](), anyInt)
-          verify(dependencies.contactRepository, times(1)).save(any[Person]())
-        }
-      }
-
     }
   }
 }

@@ -1,7 +1,7 @@
 package co.com.addi.contactbook.factories
 
 import co.com.addi.contactbook.application.dtos.PersonDto
-import co.com.addi.contactbook.domain.models.{Contact, Dni}
+import co.com.addi.contactbook.domain.models.{Contact, Dni, Prospect}
 import co.com.addi.contactbook.domain.types.IdentityCard
 
 object PersonFactory {
@@ -17,6 +17,13 @@ object PersonFactory {
 
   def createContact: Contact =
     Contact(
+      firstName = "",
+      lastName = "",
+      dni = createDni
+    )
+
+  def createProspect: Prospect =
+    Prospect(
       firstName = "",
       lastName = "",
       dni = createDni
