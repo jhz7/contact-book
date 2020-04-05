@@ -1,7 +1,5 @@
 package co.com.addi.contactbook.infraestructure.transformers
 
-import co.com.addi.contact.book.domain.models.DniCode
-import co.com.addi.contact.book.factories.PersonFactory
 import co.com.addi.contactbook.factories.PersonFactory
 import com.softwaremill.quicklens.ModifyPimp
 import org.scalatest.matchers.must.Matchers

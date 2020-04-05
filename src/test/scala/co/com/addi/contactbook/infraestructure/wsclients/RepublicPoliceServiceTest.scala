@@ -1,10 +1,5 @@
 package co.com.addi.contactbook.infraestructure.wsclients
 
-import co.com.addi.contact.book.TestKit
-import co.com.addi.contact.book.application.dtos.{APPLICATION, CriminalRecordDto, ErrorDto, TECHNICAL}
-import co.com.addi.contact.book.factories.{CriminalRecordFactory, PersonFactory}
-import co.com.addi.contact.book.infraestructure.webserver.WebServerStub
-import co.com.addi.contact.book.tools.FutureTool
 import co.com.addi.contactbook.TestKit
 import co.com.addi.contactbook.factories.{CriminalRecordFactory, PersonFactory}
 import co.com.addi.contactbook.tools.FutureTool

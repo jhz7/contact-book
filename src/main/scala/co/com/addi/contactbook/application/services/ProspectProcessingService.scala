@@ -23,7 +23,8 @@ case class ProspectProcessingService(
           prospect <- getProspect(dni)
           _ <- validationProspectVsRepublicSystemService.validate(prospect)
           _ <- prospectRatingService.validateRating(prospect)
-          _ <- save(prospect)
+          contactToSave = Contact(prospect.firstName, prospect.lastName, prospect.dni)
+          _ <- save(contactToSave)
         } yield Done
 
       processing.leftMap(error => { Logging.error(error.message, getClass); error })
@@ -36,9 +37,7 @@ case class ProspectProcessingService(
       }
   }
 
-  private def save(prospect: Prospect): CustomEitherT[Done] = {
-      val contactToSave = Contact(prospect.firstName, prospect.lastName, prospect.dni)
-
+  private def save(contactToSave: Contact): CustomEitherT[Done] = {
       contactRepository.save(contactToSave).map( _ => {
         Logging.info(s"Contact ${contactToSave.dni.number} saved successfully!!", getClass)
         Done

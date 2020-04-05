@@ -30,7 +30,7 @@ case class ValidationProspectVsRepublicSystemService(
 
       republicIdentificationService.getProspectData(prospect.dni)
         .subflatMap{
-          case Some(prospectData) => prospect.validateEqualityData(prospectData)
+          case Some(prospectData) => prospect.validateDataEquality(prospectData)
           case None               => Left(Error(APPLICATION, s"The prospect ${prospect.dni.number} does not exist in republic identification system"))
         }
   }

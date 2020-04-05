@@ -1,14 +1,12 @@
 package co.com.addi.contactbook.application.services
 
-import co.com.addi.contact.book.TestKit
-import co.com.addi.contact.book.application.dtos.{APPLICATION, ErrorDto}
-import co.com.addi.contact.book.domain.models.{Dni, Person}
-import co.com.addi.contact.book.factories.PersonFactory
-import co.com.addi.contact.book.tools.FutureTool
+import cats.data.EitherT
 import co.com.addi.contactbook.TestKit
+import co.com.addi.contactbook.domain.models.Dni
 import co.com.addi.contactbook.factories.PersonFactory
 import co.com.addi.contactbook.tools.FutureTool
 import com.softwaremill.quicklens.ModifyPimp
+import monix.eval.Task
 import org.mockito.Mockito.{times, verify}
 
 class ProspectProcessingServiceTest extends TestKit {
@@ -24,7 +22,7 @@ class ProspectProcessingServiceTest extends TestKit {
 
           val dependencies = getFalseDependencies
 
-          doReturn(EitherT.rightT[Task, ErrorDto](None)).when(dependencies.prospectRepository).get(any[Dni]())
+          doReturn(EitherT.rightT[Task, Error](None)).when(dependencies.prospectRepository).get(any[Dni]())
 
           val result = FutureTool.awaitResult(ProspectProcessingService.process(dni).run(dependencies).value.runToFuture)
 
@@ -37,7 +35,7 @@ class ProspectProcessingServiceTest extends TestKit {
         "Return an error" in {
 
           val dni = PersonFactory.createDni.modify(_.number).setTo("X")
-          val prospect = PersonFactory.createPerson.modify(_.dni).setTo(dni)
+          val prospect = PersonFactory.createContact.modify(_.dni).setTo(dni)
 
           val dependencies = getFalseDependencies
 
@@ -61,7 +59,7 @@ class ProspectProcessingServiceTest extends TestKit {
         "Return an error" in {
 
           val dni = PersonFactory.createDni.modify(_.number).setTo("X")
-          val prospect = PersonFactory.createPerson.modify(_.dni).setTo(dni)
+          val prospect = PersonFactory.createContact.modify(_.dni).setTo(dni)
 
           val dependencies = getFalseDependencies
 
@@ -88,7 +86,7 @@ class ProspectProcessingServiceTest extends TestKit {
         "Return an error" in {
 
           val dni = PersonFactory.createDni.modify(_.number).setTo("X")
-          val prospect = PersonFactory.createPerson.modify(_.dni).setTo(dni)
+          val prospect = PersonFactory.createContact.modify(_.dni).setTo(dni)
 
           val dependencies = getFalseDependencies
 
@@ -118,7 +116,7 @@ class ProspectProcessingServiceTest extends TestKit {
         "Return an error" in {
 
           val dni = PersonFactory.createDni.modify(_.number).setTo("X")
-          val prospect = PersonFactory.createPerson.modify(_.dni).setTo(dni)
+          val prospect = PersonFactory.createContact.modify(_.dni).setTo(dni)
           val score = 20
 
           val dependencies = getFalseDependencies
@@ -155,7 +153,7 @@ class ProspectProcessingServiceTest extends TestKit {
         "Return a success response" in {
 
           val dni = PersonFactory.createDni.modify(_.number).setTo("X")
-          val prospect = PersonFactory.createPerson.modify(_.dni).setTo(dni)
+          val prospect = PersonFactory.createContact.modify(_.dni).setTo(dni)
           val score = 20
 
           val dependencies = getFalseDependencies

@@ -1,8 +1,5 @@
 package co.com.addi.contactbook.domain.services
 
-import co.com.addi.contact.book.TestKit
-import co.com.addi.contact.book.application.dtos.ErrorDto
-import co.com.addi.contact.book.factories.PersonFactory
 import co.com.addi.contactbook.TestKit
 import co.com.addi.contactbook.factories.PersonFactory
 import com.softwaremill.quicklens.ModifyPimp
@@ -15,8 +12,8 @@ class ProspectDataValidationServiceTest extends TestKit {
 
       "The prospect is valid against identification service data" must {
         "Return a success response" in {
-          val prospec = PersonFactory.createPerson
-          val identificationServiceData = PersonFactory.createPerson
+          val prospec = PersonFactory.createContact
+          val identificationServiceData = PersonFactory.createContact
 
           val result = ProspectDataValidationService.validateData(prospec, identificationServiceData)
 
@@ -26,9 +23,9 @@ class ProspectDataValidationServiceTest extends TestKit {
 
       "The prospect is not valid against identification service data" must {
         "Return an error" in {
-          val prospec = PersonFactory.createPerson
+          val prospec = PersonFactory.createContact
             .modify(_.firstName).setTo("Different name")
-          val identificationServiceData = PersonFactory.createPerson
+          val identificationServiceData = PersonFactory.createContact
 
           val result = ProspectDataValidationService.validateData(prospec, identificationServiceData)
 

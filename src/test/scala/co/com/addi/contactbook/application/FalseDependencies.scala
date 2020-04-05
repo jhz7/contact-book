@@ -1,20 +1,18 @@
 package co.com.addi.contactbook.application
 
 import akka.actor.ActorSystem
-import co.com.addi.contact.book.application.services.{ProspectProcessingService, ProspectRatingService}
-import co.com.addi.contact.book.domain.contracts.{ContactBaseRepository, ProspectBaseRepository}
-import co.com.addi.contact.book.domain.services.{ProspectCriminalRecordValidationService, ProspectDataValidationService, ProspectScoreValidationService}
-import co.com.addi.contact.book.infraestructure.wsclients.{RepublicIdentificationService, RepublicPoliceService}
+import co.com.addi.contactbook.application.services.{ProspectProcessingService, ProspectRatingServiceBase, ValidationProspectVsRepublicSystemService}
+import co.com.addi.contactbook.domain.contracts.repositories.{ContactRepositoryContract, ProspectRepositoryContract}
+import co.com.addi.contactbook.domain.contracts.wsclients.{RepublicIdentificationServiceContract, RepublicPoliceServiceContract}
+import co.com.addi.contactbook.infraestructure.ServiceLocator
 import org.specs2.mock.Mockito
 
-class FalseDependencies(implicit system: ActorSystem) extends Dependencies() with Mockito{
-  override val republicIdentificationService: RepublicIdentificationService = mock[RepublicIdentificationService]
-  override val republicPoliceService: RepublicPoliceService = mock[RepublicPoliceService]
-  override val prospectRepository: ProspectBaseRepository = mock[ProspectBaseRepository]
-  override val contactRepository: ContactBaseRepository = mock[ContactBaseRepository]
-  override val prospectRatingService: ProspectRatingService = mock[ProspectRatingService]
-  override val prospectDataValidationService: ProspectDataValidationService = mock[ProspectDataValidationService]
-  override val prospectCriminalRecordValidationService: ProspectCriminalRecordValidationService = mock[ProspectCriminalRecordValidationService]
-  override val prospectScoreValidationService: ProspectScoreValidationService = mock[ProspectScoreValidationService]
-  override val prospectProcessingService: ProspectProcessingService = mock[ProspectProcessingService]
+class FalseDependencies(implicit system: ActorSystem) extends ServiceLocator() with Mockito{
+  override val republicIdentificationService = mock[RepublicIdentificationServiceContract]
+  override val republicPoliceService = mock[RepublicPoliceServiceContract]
+  override val prospectRepository = mock[ProspectRepositoryContract]
+  override val contactRepository = mock[ContactRepositoryContract]
+  override val prospectRatingService = mock[ProspectRatingServiceBase]
+  override val validationProspectVsRepublicSystemService = mock[ValidationProspectVsRepublicSystemService]
+  override val prospectProcessingService = mock[ProspectProcessingService]
 }

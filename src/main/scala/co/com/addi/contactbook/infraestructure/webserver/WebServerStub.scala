@@ -15,9 +15,7 @@ object WebServerStub {
 
   private def getLatency: Int = Random.nextInt(1000)
 
-  def startStubServer(): Unit = {
-    wireMockServer.start()
-  }
+  def startStubServer(): Unit = wireMockServer.start()
 
   def stopStubServer(): Unit = wireMockServer.stop()
 
@@ -33,7 +31,7 @@ object WebServerStub {
     )
   }
 
-  def mockSuccessNoContentGetRequest(url: String): Unit = {
+  def mockNoContentGetRequest(url: String): Unit = {
     WireMock.configureFor(wireMockServer.port())
     stubFor(
       get(urlEqualTo(url))

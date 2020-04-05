@@ -1,8 +1,5 @@
 package co.com.addi.contactbook.domain.services
 
-import co.com.addi.contact.book.TestKit
-import co.com.addi.contact.book.application.dtos.{BUSINESS, ErrorDto}
-import co.com.addi.contact.book.factories.{CriminalRecordFactory, PersonFactory}
 import co.com.addi.contactbook.TestKit
 import co.com.addi.contactbook.factories.{CriminalRecordFactory, PersonFactory}
 import com.softwaremill.quicklens.ModifyPimp

@@ -1,7 +1,5 @@
 package co.com.addi.contactbook.factories
 
-import co.com.addi.contact.book.application.dtos.CriminalRecordDto
-
 object CriminalRecordFactory {
 
   def getInstance: CriminalRecordDto =

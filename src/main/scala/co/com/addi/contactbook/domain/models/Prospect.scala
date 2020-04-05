@@ -17,7 +17,7 @@ case class Prospect(firstName: String, lastName: String, dni: Dni) {
     Right(Done)
   }
 
-  def validateEqualityData(that: Prospect): CustomEither[Done] =
+  def validateDataEquality(that: Prospect): CustomEither[Done] =
     (
       validateItem(that.dni.number, this.dni.number, "DNI Number"),
       validateItem(that.dni.code, this.dni.code, "DNI Code"),

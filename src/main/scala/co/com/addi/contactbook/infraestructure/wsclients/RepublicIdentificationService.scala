@@ -42,6 +42,6 @@ case class RepublicIdentificationService(wsClient: StandaloneAhcWSClient) extend
   private def stubWebServer(id: String): Unit =
     RepublicIdentificationDataSet.data.get(id) match {
       case Some(personDto) => WebServerStub.mockSuccessGetRequest(webResourcePath(id), personDto)
-      case None            => WebServerStub.mockSuccessNoContentGetRequest(webResourcePath(id))
+      case None            => WebServerStub.mockNoContentGetRequest(webResourcePath(id))
     }
 }

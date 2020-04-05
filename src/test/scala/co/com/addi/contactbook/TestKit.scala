@@ -1,7 +1,9 @@
 package co.com.addi.contactbook
 
-import co.com.addi.contact.book.application.FalseDependencies
+import akka.actor.ActorSystem
 import co.com.addi.contactbook.application.FalseDependencies
+import monix.execution.Scheduler
+import monix.execution.Scheduler.Implicits.global
 import org.scalatest.BeforeAndAfterEach
 import org.scalatest.matchers.must.Matchers
 import org.scalatest.wordspec.AnyWordSpec

@@ -1,5 +1,3 @@
-import java.util.concurrent.Executors
-
 import akka.Done
 import akka.actor.ActorSystem
 import co.com.addi.contactbook.domain.aliases.CustomEither
@@ -9,32 +7,28 @@ import co.com.addi.contactbook.infraestructure.ServiceLocator
 import co.com.addi.contactbook.infraestructure.datasets.ProspectsDataSet
 import co.com.addi.contactbook.infraestructure.webserver.WebServerStub
 import monix.eval.Task
-import monix.execution.ExecutionModel.AlwaysAsyncExecution
-import monix.execution.schedulers.SchedulerService
-import monix.execution.{Scheduler, UncaughtExceptionReporter}
+import monix.execution.Scheduler.Implicits.global
+
+import scala.concurrent.Await
+import scala.concurrent.duration.Duration
 
 object Main extends App {
-
-  implicit val schedulerService: SchedulerService = Scheduler(
-    Executors.newFixedThreadPool( 10 ),
-    UncaughtExceptionReporter( t => println( s"this should not happen: ${t.getMessage}" ) ),
-    AlwaysAsyncExecution
-  )
 
   WebServerStub.startStubServer()
   implicit val system: ActorSystem = ActorSystem()
   val dependencies = new ServiceLocator()
 
-  val tasks: List[Task[CustomEither[Done]]] = ProspectsDataSet.data.values.toList.map(personDto => {
-    val dni = Dni(personDto.id, DniCode(personDto.typeId), "")
-    dependencies.prospectProcessingService.validateProspect(dni).value
-  })
+  val tasks =
+    ProspectsDataSet.data.values.toList.map(personDto => {
+      val dni = Dni(personDto.id, DniCode(personDto.typeId), "")
+      dependencies.prospectProcessingService
+        .validateProspect(dni).fold( _ => Nil, _ => Nil )
+    })
 
-  Task.sequence(tasks).runToFuture
-    .andThen( _ => {
-        WebServerStub.stopStubServer()
-        system.terminate()
-        schedulerService.shutdown()
-      })
+  Await.result( Task.gatherUnordered(tasks).runToFuture, Duration.Inf )
 
+  WebServerStub.stopStubServer()
+  println("Finished!!!")
+
+  System.runFinalization()
 }

@@ -15,13 +15,19 @@ class ServiceLocator(implicit var system: ActorSystem) {
   val wsClient = StandaloneAhcWSClient()
 
   val republicIdentificationService: RepublicIdentificationServiceContract = RepublicIdentificationService(wsClient)
+
   val republicPoliceService: RepublicPoliceServiceContract = RepublicPoliceService(wsClient)
 
   val prospectRepository: ProspectRepositoryContract = ProspectRepository
+
   val contactRepository: ContactRepositoryContract = ContactRepository
 
   val prospectRatingService: ProspectRatingServiceBase = ProspectRatingService
-  val validationProspectVsRepublicSystemService = ValidationProspectVsRepublicSystemService(republicIdentificationService, republicPoliceService)
-  val prospectProcessingService = ProspectProcessingService(prospectRepository, prospectRatingService, contactRepository, validationProspectVsRepublicSystemService)
+
+  val validationProspectVsRepublicSystemService: ValidationProspectVsRepublicSystemService =
+    ValidationProspectVsRepublicSystemService(republicIdentificationService, republicPoliceService)
+
+  val prospectProcessingService: ProspectProcessingService =
+    ProspectProcessingService(prospectRepository, prospectRatingService, contactRepository, validationProspectVsRepublicSystemService)
 
 }

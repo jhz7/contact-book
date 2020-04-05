@@ -37,6 +37,6 @@ case class RepublicPoliceService(wsClient: StandaloneAhcWSClient) extends Republ
   private def stubWebServer(id: String): Unit =
     RepublicPoliceDataSet.data.get(id) match {
       case Some(criminalRecordDto) => WebServerStub.mockSuccessGetRequest(webResourcePath(id), criminalRecordDto)
-      case None                    => WebServerStub.mockSuccessNoContentGetRequest(webResourcePath(id))
+      case None                    => WebServerStub.mockNoContentGetRequest(webResourcePath(id))
     }
 }
