@@ -1,5 +1,4 @@
 # Contact Book
-Proyecto correspondiente a la prueba técnica para el cargo de ingeniero backend en ADDI
 
 ## El problema:
 Se requiere tener un directorio de contactos de personas naturales con las cuales poder hacer negocios en el futuro.  
